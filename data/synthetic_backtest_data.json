@@ -1,0 +1,24 @@
+[
+  { "timestamp": "2026-09-09T04:00:00.000Z", "token": "TOKEN_TP_WIN", "price": 0.000100 },
+  { "timestamp": "2026-09-09T04:00:05.000Z", "token": "TOKEN_TP_WIN", "price": 0.000102 },
+  { "timestamp": "2026-09-09T04:00:10.000Z", "token": "TOKEN_TP_WIN", "price": 0.000104 },
+  { "timestamp": "2026-09-09T04:00:15.000Z", "token": "TOKEN_TP_WIN", "price": 0.000106 },
+
+  { "timestamp": "2026-09-09T04:05:00.000Z", "token": "TOKEN_SL_LOSS", "price": 0.000200 },
+  { "timestamp": "2026-09-09T04:05:05.000Z", "token": "TOKEN_SL_LOSS", "price": 0.000198 },
+  { "timestamp": "2026-09-09T04:05:10.000Z", "token": "TOKEN_SL_LOSS", "price": 0.000195 },
+  { "timestamp": "2026-09-09T04:05:15.000Z", "token": "TOKEN_SL_LOSS", "price": 0.000193 },
+
+  { "timestamp": "2026-09-09T04:10:00.000Z", "token": "TOKEN_MH_TIMEOUT", "price": 0.000500 },
+  { "timestamp": "2026-09-09T04:11:00.000Z", "token": "TOKEN_MH_TIMEOUT", "price": 0.000510 },
+  { "timestamp": "2026-09-09T04:12:00.000Z", "token": "TOKEN_MH_TIMEOUT", "price": 0.000495 },
+  { "timestamp": "2026-09-09T04:13:00.000Z", "token": "TOKEN_MH_TIMEOUT", "price": 0.000515 },
+  { "timestamp": "2026-09-09T04:14:00.000Z", "token": "TOKEN_MH_TIMEOUT", "price": 0.000492 },
+  { "timestamp": "2026-09-09T04:15:00.000Z", "token": "TOKEN_MH_TIMEOUT", "price": 0.000510 },
+
+  { "timestamp": "2026-09-09T04:20:00.000Z", "token": "TOKEN_MULTI_WIN", "price": 0.001000 },
+  { "timestamp": "2026-09-09T04:20:10.000Z", "token": "TOKEN_MULTI_WIN", "price": 0.001060 },
+
+  { "timestamp": "2026-09-09T04:25:00.000Z", "token": "TOKEN_MULTI_LOSS", "price": 0.001000 },
+  { "timestamp": "2026-09-09T04:25:10.000Z", "token": "TOKEN_MULTI_LOSS", "price": 0.000960 }
+]

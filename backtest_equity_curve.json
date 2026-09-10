@@ -1,0 +1,43 @@
+[
+  {
+    "trade": 0,
+    "equity": 1000,
+    "pnl": 0,
+    "timestamp": "2026-09-09T04:00:00.000Z"
+  },
+  {
+    "trade": 1,
+    "equity": 1000.6,
+    "pnl": 0.6,
+    "symbol": "TOKEN_TP_WIN",
+    "timestamp": "2026-09-09T04:00:15.000Z"
+  },
+  {
+    "trade": 2,
+    "equity": 1000.25,
+    "pnl": -0.35,
+    "symbol": "TOKEN_SL_LOSS",
+    "timestamp": "2026-09-09T04:05:15.000Z"
+  },
+  {
+    "trade": 3,
+    "equity": 1000.45,
+    "pnl": 0.2,
+    "symbol": "TOKEN_MH_TIMEOUT",
+    "timestamp": "2026-09-09T04:15:00.000Z"
+  },
+  {
+    "trade": 4,
+    "equity": 1001.05,
+    "pnl": 0.6,
+    "symbol": "TOKEN_MULTI_WIN",
+    "timestamp": "2026-09-09T04:20:10.000Z"
+  },
+  {
+    "trade": 5,
+    "equity": 1000.65,
+    "pnl": -0.4,
+    "symbol": "TOKEN_MULTI_LOSS",
+    "timestamp": "2026-09-09T04:25:10.000Z"
+  }
+]

@@ -1,0 +1,38 @@
+{
+  "totalTrades": 5,
+  "winningTrades": 3,
+  "losingTrades": 2,
+  "breakevenTrades": 0,
+  "winRatePercent": 60,
+  "lossRatePercent": 40,
+  "grossProfitUsd": 1.4,
+  "grossLossUsd": -0.75,
+  "netPnlUsd": 0.65,
+  "averageTradeUsd": 0.13,
+  "averageWinUsd": 0.47,
+  "averageLossUsd": -0.38,
+  "largestWinUsd": 0.6,
+  "largestLossUsd": -0.4,
+  "winLossRatio": 1.24,
+  "profitFactor": 1.87,
+  "initialCapital": 1000,
+  "endingCapital": 1000.65,
+  "maxDrawdownUsd": 0.4,
+  "maxDrawdownPercent": 0.04,
+  "averageHoldTimeMs": 70000,
+  "averageHoldTimeStr": "01m 10s",
+  "exitReasonBreakdown": {
+    "TAKE_PROFIT": {
+      "count": 2,
+      "percent": 40
+    },
+    "STOP_LOSS": {
+      "count": 2,
+      "percent": 40
+    },
+    "MAX_HOLD_TIME": {
+      "count": 1,
+      "percent": 20
+    }
+  }
+}

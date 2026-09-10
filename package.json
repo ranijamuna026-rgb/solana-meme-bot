@@ -1,0 +1,24 @@
+{
+  "name": "solana-meme-bot",
+  "version": "1.0.0",
+  "description": "Solana memecoin monitoring and 5-minute paper-trading bot",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test/paperTrader.test.js && node test/backtester.test.js && node test/riskManager.test.js && node test/api.test.js && node test/validation.test.js && node test/executionEngine.test.js && node test/simulationLayer.test.js && node test/safetyGate.test.js",
+    "backtest": "node src/runBacktest.js"
+  },
+  "keywords": [
+    "solana",
+    "bot",
+    "paper-trading",
+    "memecoin"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@solana/web3.js": "^1.95.8",
+    "dotenv": "^16.4.7"
+  }
+}

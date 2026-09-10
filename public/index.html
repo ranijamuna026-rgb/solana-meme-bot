@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solana Meme Coin Bot — Paper Trading Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">⚡</div>
+        <div class="logo-text">
+          <span class="brand-title">SOLANA MEME</span>
+          <span class="brand-subtitle">MONITOR BOT</span>
+        </div>
+      </div>
+
+      <div class="paper-trading-badge-sidebar">
+        <span class="badge-icon">🛡️</span>
+        <span class="badge-text">PAPER TRADING ONLY</span>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="#dashboard" class="nav-item active" id="nav-dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="#candidates" class="nav-item" id="nav-candidates">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-label">Candidates</span>
+        </a>
+        <a href="#active-trade" class="nav-item" id="nav-active-trade">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-label">Active Trade</span>
+        </a>
+        <a href="#performance" class="nav-item" id="nav-performance">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">Performance</span>
+        </a>
+        <a href="#risk-limits" class="nav-item" id="nav-risk-limits">
+          <span class="nav-icon">🔒</span>
+          <span class="nav-label">Risk Limits</span>
+        </a>
+        <a href="#trade-history" class="nav-item" id="nav-trade-history">
+          <span class="nav-icon">📜</span>
+          <span class="nav-label">Trade History</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-indicator">
+          <span class="status-dot pulse" id="sidebar-status-dot"></span>
+          <span class="status-text" id="sidebar-status-text">BOT RUNNING</span>
+        </div>
+        <div class="read-only-tag">READ-ONLY DASHBOARD</div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+      <!-- TOP HEADER BAR -->
+      <header class="top-header">
+        <div class="header-left">
+          <h1 class="page-title">SOLANA MEME BOT MONITOR</h1>
+          <div class="header-subtitle">Real-Time Market Scanner & Paper Trading Analytics</div>
+        </div>
+
+        <div class="header-right">
+          <!-- PAPER TRADING PROMINENT BADGE -->
+          <div class="paper-trading-card">
+            <span class="paper-badge-dot">●</span>
+            <span class="paper-badge-text">[ PAPER TRADING ]</span>
+          </div>
+
+          <!-- REFRESH ACTION BUTTON -->
+          <button id="btn-refresh" class="btn-pink-outline" title="Refresh Dashboard Data">
+            <span class="btn-icon">↻</span>
+            <span class="btn-text">REFRESH</span>
+          </button>
+
+          <div class="live-clock">
+            <span id="live-time">00:00:00 UTC</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- BOT STATUS SUMMARY BAR -->
+      <section id="dashboard" class="dashboard-section">
+        <div class="status-cards-grid">
+          <!-- CARD A: BOT OPERATIONAL STATUS -->
+          <div class="status-card">
+            <div class="card-header-sm">BOT STATUS</div>
+            <div class="card-body-primary">
+              <span class="status-indicator-dot pulse" id="bot-status-dot">●</span>
+              <span class="card-value-lg" id="bot-status-val">RUNNING</span>
+            </div>
+            <div class="card-subtext">Mode: <strong id="bot-mode-text">PAPER TRADING ONLY</strong></div>
+          </div>
+
+          <!-- CARD B: API CONNECTION STATUS -->
+          <div class="status-card">
+            <div class="card-header-sm">API CONNECTION</div>
+            <div class="card-body-primary">
+              <span class="status-indicator-dot pulse" id="api-status-dot">●</span>
+              <span class="card-value-lg" id="api-status-val">CONNECTED</span>
+            </div>
+            <div class="card-subtext" id="api-rpc-url">RPC: Connected</div>
+          </div>
+
+          <!-- CARD C: UPTIME & LAST UPDATE -->
+          <div class="status-card">
+            <div class="card-header-sm">SYSTEM UPTIME</div>
+            <div class="card-body-primary">
+              <span class="card-value-lg" id="uptime-val">00m 00s</span>
+            </div>
+            <div class="card-subtext">Last Sync: <span id="last-sync-time">Just now</span></div>
+          </div>
+
+          <!-- CARD D: TOTAL PAPER P&L OVERVIEW -->
+          <div class="status-card highlight-card">
+            <div class="card-header-sm">TOTAL PAPER P&L</div>
+            <div class="card-body-primary">
+              <span class="card-value-lg pink-glow-text" id="total-pnl-val">$0.00</span>
+            </div>
+        </div>
+
+        <!-- VALIDATION SESSION PROGRESS CARD (PHASE 8.7) -->
+        <div class="validation-progress-card">
+          <div class="validation-card-header">
+            <div class="card-header-sm">REAL MARKET PAPER-TRADING VALIDATION SESSION</div>
+            <span class="validation-badge" id="val-session-status">IN_PROGRESS</span>
+          </div>
+
+          <div class="validation-grid">
+            <div class="val-item">
+              <span class="val-label">REAL MARKET PAPER TRADES</span>
+              <span class="val-value pink-glow-text" id="val-trades-count">0</span>
+            </div>
+            <div class="val-item">
+              <span class="val-label">MIN TARGET (100 TRADES)</span>
+              <span class="val-value" id="val-min-target">0 / 100 (0%)</span>
+            </div>
+            <div class="val-item">
+              <span class="val-label">REC TARGET (200 TRADES)</span>
+              <span class="val-value" id="val-rec-target">0 / 200 (0%)</span>
+            </div>
+            <div class="val-item">
+              <span class="val-label">SESSION WIN RATE</span>
+              <span class="val-value" id="val-win-rate">0.00%</span>
+            </div>
+            <div class="val-item">
+              <span class="val-label">SESSION P&L</span>
+              <span class="val-value" id="val-pnl">$0.00</span>
+            </div>
+            <div class="val-item">
+              <span class="val-label">SESSION DURATION</span>
+              <span class="val-value" id="val-duration">00h 00m 00s</span>
+            </div>
+          </div>
+
+          <div class="validation-bar-wrapper">
+            <div class="validation-bar-track">
+              <div class="validation-bar-fill" id="val-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="validation-bar-labels">
+              <span>0 Trades</span>
+              <span>100 (Min Target)</span>
+              <span>200 (Rec Target)</span>
+            </div>
+          </div>
+
+          <div class="validation-completion-banner hidden" id="val-completion-banner">
+            <div class="val-banner-title">
+              <span>🎉</span> Phase 8.7.2 Complete — 100 genuine market paper trades collected.
+            </div>
+            <div class="val-banner-subtitle">
+              Next Step: Phase 8.7.3 Final Audit
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIVE PAPER TRADE SECTION -->
+        <div id="active-trade" class="section-container">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="title-pink-bar"></span> ACTIVE PAPER TRADE
+            </h2>
+            <div class="trade-mode-tag">SIMULATED POSITION</div>
+          </div>
+
+          <div id="active-trade-container" class="active-trade-card">
+            <!-- Dynamic Active Trade Content Inserted via JS -->
+            <div class="empty-state-trade">
+              <div class="empty-icon">⏳</div>
+              <div class="empty-title">NO ACTIVE PAPER TRADE</div>
+              <div class="empty-desc">The bot is currently scanning Solana mainnet DEX pairs for valid candidate setups meeting risk criteria.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CURRENT CANDIDATES SECTION -->
+        <div id="candidates" class="section-container">
+          <div class="section-header flex-between">
+            <div>
+              <h2 class="section-title">
+                <span class="title-pink-bar"></span> CURRENT CANDIDATES
+              </h2>
+              <div class="section-desc">Evaluated Solana Memecoin Tokens & Strategy/Risk Check Results</div>
+            </div>
+
+            <!-- CANDIDATE FILTER BUTTONS -->
+            <div class="filter-group">
+              <button class="filter-btn active" data-filter="ALL">ALL (<span id="count-all">0</span>)</button>
+              <button class="filter-btn" data-filter="APPROVED">APPROVED (<span id="count-approved">0</span>)</button>
+              <button class="filter-btn" data-filter="REJECTED">REJECTED (<span id="count-rejected">0</span>)</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="pink-table" id="candidates-table">
+              <thead>
+                <tr>
+                  <th>TOKEN / SYMBOL</th>
+                  <th>ADDRESS</th>
+                  <th>PRICE (USD)</th>
+                  <th>RISK SCORE</th>
+                  <th>STRATEGY SCORE</th>
+                  <th>DECISION</th>
+                  <th>TIMESTAMP</th>
+                  <th>DETAILS</th>
+                </tr>
+              </thead>
+              <tbody id="candidates-tbody">
+                <tr>
+                  <td colspan="8" class="table-loading">Scanning market candidates...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PAPER TRADING PERFORMANCE SECTION -->
+        <div id="performance" class="section-container">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="title-pink-bar"></span> PAPER TRADING PERFORMANCE
+            </h2>
+            <div class="section-desc">Simulated Strategy Performance Analytics & Statistical Metrics</div>
+          </div>
+
+          <div class="status-cards-grid">
+            <div class="status-card">
+              <div class="card-header-sm">TOTAL PAPER TRADES</div>
+              <div class="card-body-primary">
+                <span class="card-value-lg" id="perf-total-trades">0</span>
+              </div>
+              <div class="card-subtext">Wins: <span id="perf-wins">0</span> | Losses: <span id="perf-losses">0</span></div>
+            </div>
+
+            <div class="status-card highlight-card">
+              <div class="card-header-sm">PAPER WIN RATE</div>
+              <div class="card-body-primary">
+                <span class="card-value-lg pink-glow-text" id="perf-win-rate">0.00%</span>
+              </div>
+              <div class="card-subtext">Target Strategy Benchmark</div>
+            </div>
+
+            <div class="status-card">
+              <div class="card-header-sm">PROFIT FACTOR</div>
+              <div class="card-body-primary">
+                <span class="card-value-lg" id="perf-profit-factor">N/A</span>
+              </div>
+              <div class="card-subtext">Gross Profit / Gross Loss</div>
+            </div>
+
+            <div class="status-card">
+              <div class="card-header-sm">AVG TRADE P&L</div>
+              <div class="card-body-primary">
+                <span class="card-value-lg" id="perf-avg-pnl">$0.00</span>
+              </div>
+              <div class="card-subtext">Avg Win: <span id="perf-avg-win">$0.00</span> | Avg Loss: <span id="perf-avg-loss">$0.00</span></div>
+            </div>
+          </div>
+
+          <div class="risk-limits-grid" style="margin-top: 20px;">
+            <!-- TRADE EXTREMES & DURATION CARD -->
+            <div class="risk-card">
+              <h3 class="risk-card-title">PAPER STATISTICAL EXTREMES</h3>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">BEST PAPER TRADE:</span>
+                  <span class="metric-value pink-text" id="perf-best-trade">$0.00</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">WORST PAPER TRADE:</span>
+                  <span class="metric-value" id="perf-worst-trade">$0.00</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">AVERAGE DURATION:</span>
+                  <span class="metric-value" id="perf-avg-duration">00m 00s</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">MAX PAPER DRAWDOWN:</span>
+                  <span class="metric-value" id="perf-max-drawdown">$0.00 (0.00%)</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">RECORD QUALITY:</span>
+                  <span class="metric-value" id="perf-data-quality">0 Valid / 0 Excluded</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- EXIT REASON ANALYSIS CARD -->
+            <div class="risk-card">
+              <h3 class="risk-card-title">EXIT REASON ANALYSIS</h3>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">TAKE PROFIT (+5%):</span>
+                  <span class="metric-value pink-text" id="exit-tp-count">0 (0.00%)</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">STOP LOSS (-3%):</span>
+                  <span class="metric-value" id="exit-sl-count">0 (0.00%)</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">MAX HOLD (5 MIN):</span>
+                  <span class="metric-value" id="exit-mh-count">0 (0.00%)</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">OTHER EXITS:</span>
+                  <span class="metric-value" id="exit-other-count">0 (0.00%)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CANDIDATE EVALUATION PERFORMANCE CARD -->
+            <div class="risk-card">
+              <h3 class="risk-card-title">CANDIDATE PERFORMANCE</h3>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">TOTAL EVALUATED:</span>
+                  <span class="metric-value" id="cand-total-eval">0</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">APPROVED COUNT:</span>
+                  <span class="metric-value pink-text" id="cand-approved-count">0</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">REJECTED COUNT:</span>
+                  <span class="metric-value" id="cand-rejected-count">0</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">EXECUTED PAPER TRADES:</span>
+                  <span class="metric-value" id="cand-executed-trades">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RISK CONTROLS & RISK LIMITS SECTION -->
+        <div id="risk-limits" class="section-container">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="title-pink-bar"></span> RISK CONTROLS & RISK LIMITS
+            </h2>
+            <div class="section-desc">Configured Safety Parameters & Real-Time Portfolio State</div>
+          </div>
+
+          <div class="risk-limits-grid">
+            <!-- RISK CHECK COUNTERS CARD -->
+            <div class="risk-card">
+              <h3 class="risk-card-title">REAL-TIME RISK METRICS</h3>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">HOURLY TRADES:</span>
+                  <span class="metric-value" id="risk-hourly-trades">0 / 10</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">DAILY TRADES:</span>
+                  <span class="metric-value" id="risk-daily-trades">0 / 30</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">CONSECUTIVE LOSSES:</span>
+                  <span class="metric-value" id="risk-consec-losses">0 / 3</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">CIRCUIT BREAKER:</span>
+                  <span class="metric-value" id="risk-circuit-breaker">INACTIVE</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">LOSS COOLDOWN:</span>
+                  <span class="metric-value" id="risk-cooldown">INACTIVE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TRADE PARAMETERS CARD -->
+            <div class="risk-card">
+              <h3 class="risk-card-title">TRADE PARAMETERS</h3>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">TAKE PROFIT (TP):</span>
+                  <span class="metric-value pink-text">+5%</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">STOP LOSS (SL):</span>
+                  <span class="metric-value pink-text">-3%</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">MAX HOLD TIME:</span>
+                  <span class="metric-value pink-text">5 MIN</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">POSITION SIZE:</span>
+                  <span class="metric-value" id="risk-pos-size">$10.00 - $50.00</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">MAX LIQUIDITY CAP:</span>
+                  <span class="metric-value" id="risk-max-liq-pct">1.0%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- THRESHOLDS & LIMITS CARD -->
+            <div class="risk-card">
+              <h3 class="risk-card-title">FILTER THRESHOLDS</h3>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">MIN LIQUIDITY:</span>
+                  <span class="metric-value" id="risk-min-liq">$10,000</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">MIN 5M VOLUME:</span>
+                  <span class="metric-value" id="risk-min-vol">$5,000</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">MIN STRATEGY SCORE:</span>
+                  <span class="metric-value" id="risk-min-strat-score">70 / 100</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">MAX RISK SCORE:</span>
+                  <span class="metric-value" id="risk-max-risk-score">60 / 100</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">MAX DAILY LOSS LIMIT:</span>
+                  <span class="metric-value" id="risk-max-daily-loss">-$20.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRADE HISTORY SECTION -->
+        <div id="trade-history" class="section-container">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="title-pink-bar"></span> TRADE HISTORY
+            </h2>
+            <div class="section-desc">Completed Paper Trades & Performance Log</div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="pink-table" id="history-table">
+              <thead>
+                <tr>
+                  <th>TOKEN / SYMBOL</th>
+                  <th>ENTRY PRICE</th>
+                  <th>EXIT PRICE</th>
+                  <th>P&L ($ / %)</th>
+                  <th>RESULT</th>
+                  <th>DURATION</th>
+                  <th>EXIT REASON</th>
+                  <th>TIMESTAMP</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <tr>
+                  <td colspan="8" class="table-loading">Loading trade history...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- CANDIDATE DETAILS MODAL -->
+  <div id="candidate-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-candidate-title">CANDIDATE DETAILS</h3>
+        <button class="modal-close" id="btn-modal-close">×</button>
+      </div>
+      <div class="modal-body" id="modal-candidate-body">
+        <!-- Filled dynamically via app.js -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-pink-solid" id="btn-modal-dismiss">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
