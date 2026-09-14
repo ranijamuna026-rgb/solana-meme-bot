@@ -359,6 +359,14 @@ export async function simulateTransaction(candidateToken, side = 'BUY', amountUs
       }
     } catch (err) {
       console.warn('[WARN] Simulation price check fetch failed:', err.message);
+      const failure = {
+        result: 'FAILED_SIMULATION',
+        reason: SIMULATION_REJECTION_REASONS.SIMULATION_ERROR,
+        message: err.message,
+        timestamp: new Date(nowMs).toISOString()
+      };
+      logSimulationAudit(failure);
+      return failure;
     }
   }
 

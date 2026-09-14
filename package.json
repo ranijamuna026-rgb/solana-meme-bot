@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "test": "node test/paperTrader.test.js && node test/backtester.test.js && node test/riskManager.test.js && node test/api.test.js && node test/validation.test.js && node test/executionEngine.test.js && node test/simulationLayer.test.js && node test/safetyGate.test.js",
+    "test": "node test/paperTrader.test.js && node test/backtester.test.js && node test/riskManager.test.js && node test/api.test.js && node test/validation.test.js && node test/executionEngine.test.js && node test/simulationLayer.test.js && node test/safetyGate.test.js && node test/endToEndSafety.test.js",
     "backtest": "node src/runBacktest.js"
   },
   "keywords": [

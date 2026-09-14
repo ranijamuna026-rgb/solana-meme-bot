@@ -212,7 +212,8 @@ export async function evaluatePreExecutionSafetyGate(
   const isSubmissionUnavailable = true; // No transaction submitters exist in codebase
   recordCheck('13_submission_unavailability', isSubmissionUnavailable);
 
-  // All 13 Pre-Execution Safety Checks Passed
+  // All Pre-Execution Safety Checks Passed
+  const totalChecksCount = passedChecks.length + failedChecks.length;
   return {
     requestId,
     executionMode: config.tradingMode || 'PAPER',
@@ -220,7 +221,7 @@ export async function evaluatePreExecutionSafetyGate(
     tokenMint: candidateToken.address,
     side,
     requestedAmount: requestedAmountUsd,
-    safetyChecks: 13,
+    safetyChecks: totalChecksCount,
     passedChecks: passedChecks.length,
     failedChecks: [],
     finalStatus: 'SAFETY_GATE_PASSED',
@@ -235,6 +236,7 @@ export async function evaluatePreExecutionSafetyGate(
  * Internal helper formatting rejected safety gate responses.
  */
 function buildGateResult(requestId, candidateToken, side, amountUsd, passedChecks, failedChecks, reasonCode, nowMs) {
+  const totalChecksCount = passedChecks.length + failedChecks.length;
   return {
     requestId,
     executionMode: config.tradingMode || 'PAPER',
@@ -242,7 +244,7 @@ function buildGateResult(requestId, candidateToken, side, amountUsd, passedCheck
     tokenMint: candidateToken ? candidateToken.address : null,
     side,
     requestedAmount: amountUsd,
-    safetyChecks: 13,
+    safetyChecks: totalChecksCount,
     passedChecks: passedChecks.length,
     failedChecks,
     finalStatus: 'SAFETY_GATE_REJECTED',
