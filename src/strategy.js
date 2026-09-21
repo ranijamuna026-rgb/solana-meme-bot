@@ -82,7 +82,8 @@ export function evaluateStrategy(token, riskResult) {
 
   // Calculate Total Score (0 - 100)
   const totalScore = liquidityScore + volumeScore + activityScore + balanceScore + ageScore;
-  const isCandidate = totalScore >= config.strategyMinScore;
+  const minScoreThreshold = config.minStrategyScore || config.strategyMinScore;
+  const isCandidate = totalScore >= minScoreThreshold;
   const status = isCandidate ? 'CANDIDATE' : 'REJECTED (LOW SCORE)';
 
   const result = {

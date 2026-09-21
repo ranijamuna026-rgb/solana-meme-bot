@@ -27,7 +27,7 @@ export function evaluateTokenRisk(token) {
 
   // 1. DATA COMPLETENESS CHECK
   // Verify token has essential market fields (valid address, non-null price, and valid priceUsd)
-  if (!token || !token.address || token.priceUsd === null || isNaN(token.priceUsd)) {
+  if (!token || !token.address || token.priceUsd === null || isNaN(token.priceUsd) || token.priceUsd <= 0) {
     failureReasons.push('Missing or invalid price/market data');
   } else {
     checks.data = 'PASS';

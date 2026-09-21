@@ -12,6 +12,7 @@ import { executePaperTrade, stopPaperTrader } from './paperTrader.js';
 import { evaluateTradeRisk } from './riskManager.js';
 import { recordCandidate } from './candidateTracker.js';
 import { startDashboardServer, stopDashboardServer } from './server.js';
+import { startLaunchDayScheduler, stopLaunchDayScheduler } from './launchDayScheduler.js';
 
 let monitorStopFn = null;
 let dashboardServerObj = null;
@@ -49,6 +50,13 @@ async function startBot() {
         dashboardServerObj = await startDashboardServer();
       } catch (serverErr) {
         console.error('[WARN] Dashboard API server failed to start:', serverErr.message);
+      }
+
+      // Start Phase 10D.3 Launch-Day Automated Scheduler
+      try {
+        startLaunchDayScheduler();
+      } catch (schedErr) {
+        console.error('[WARN] Launch-Day Scheduler failed to start:', schedErr.message);
       }
 
       // Start continuous token monitoring
@@ -97,13 +105,18 @@ async function startBot() {
   }
 }
 
+let isShuttingDown = false;
+
 // Graceful shutdown handling
 function handleShutdown(signal) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
   console.log(`\n[INFO] Received ${signal}. Shutting down paper-trading bot gracefully...`);
   if (typeof monitorStopFn === 'function') {
     monitorStopFn();
   }
   stopPaperTrader();
+  stopLaunchDayScheduler();
   stopDashboardServer();
   process.exit(0);
 }

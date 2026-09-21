@@ -14,6 +14,21 @@ import { getCandidates } from './candidateTracker.js';
 import { calculatePerformanceAnalytics } from './analytics.js';
 import { getKillSwitchState, getSimulationAuditLogs } from './simulationLayer.js';
 import { isSafetyConfigurationValid } from './safetyGate.js';
+import { getTomorrowWatchlist } from './preLaunchEngine.js';
+import { getDiscoveryStatus, getSourcesStatus, getEvidenceReport, getTomorrowShortlist } from './preLaunchScheduler.js';
+import { 
+  getLaunchIntelligenceStatus, 
+  getLaunchIntelligenceCandidates, 
+  getLaunchIntelligenceSources, 
+  getLaunchIntelligenceEvidence 
+} from './launchIntelligence.js';
+import { 
+  getLaunchAnnouncementsStatus, 
+  getLaunchAnnouncementsCandidates, 
+  getLaunchAnnouncementsSources, 
+  getLaunchAnnouncementsEvidence 
+} from './launchAnnouncementDiscovery.js';
+import { getLaunchDaySchedulerStatus } from './launchDayScheduler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,6 +87,45 @@ function handleApiRequest(req, res) {
   const pathname = url.pathname;
 
   try {
+    // Standard Cloud Health Endpoints
+    if (pathname === '/healthz') {
+      const nowMs = Date.now();
+      const uptimeSeconds = Math.floor((nowMs - startTimeMs) / 1000);
+      sendJsonResponse(res, 200, {
+        status: 'OK',
+        tradingMode: config.tradingMode || 'PAPER',
+        uptimeSeconds,
+        timestamp: new Date(nowMs).toISOString()
+      });
+      return;
+    }
+
+    if (pathname === '/livez') {
+      const nowMs = Date.now();
+      const uptimeSeconds = Math.floor((nowMs - startTimeMs) / 1000);
+      sendJsonResponse(res, 200, {
+        status: 'ALIVE',
+        uptimeSeconds,
+        timestamp: new Date(nowMs).toISOString()
+      });
+      return;
+    }
+
+    if (pathname === '/readyz') {
+      const nowMs = Date.now();
+      const configValid = isSafetyConfigurationValid();
+      const rpcConfigured = Boolean(config.rpcUrl && typeof config.rpcUrl === 'string');
+      const isReady = configValid && rpcConfigured;
+      sendJsonResponse(res, isReady ? 200 : 503, {
+        status: isReady ? 'READY' : 'UNREADY',
+        tradingMode: config.tradingMode || 'PAPER',
+        configurationValid: configValid,
+        rpcConfigured,
+        timestamp: new Date(nowMs).toISOString()
+      });
+      return;
+    }
+
     // Route 1: GET /api/status
     if (pathname === '/api/status') {
       const nowMs = Date.now();
@@ -141,6 +195,143 @@ function handleApiRequest(req, res) {
         count: candidates.length,
         candidates
       });
+      return;
+    }
+
+    // Route 2B: GET /api/tomorrow-candidates
+    if (pathname === '/api/tomorrow-candidates') {
+      const watchlist = getTomorrowWatchlist();
+      sendJsonResponse(res, 200, {
+        mode: 'PRE_LAUNCH_ANALYSIS',
+        shortlistCount: watchlist.length,
+        watchlist
+      });
+      return;
+    }
+
+    // Route 2C: GET /api/prelaunch-status
+    if (pathname === '/api/prelaunch-status') {
+      const watchlist = getTomorrowWatchlist();
+      const readyCount = watchlist.filter(w => w.status === 'READY_FOR_LAUNCH').length;
+      const watchCount = watchlist.filter(w => w.status === 'WATCH').length;
+
+      sendJsonResponse(res, 200, {
+        mode: 'PRE_LAUNCH_ANALYSIS',
+        status: 'ACTIVE',
+        preLaunchMonitoring: true,
+        tomorrowShortlistCount: watchlist.length,
+        readyForLaunchCount: readyCount,
+        watchCount: watchCount,
+        launchDayVerificationStatus: 'IDLE_WAITING_FOR_LAUNCH'
+      });
+      return;
+    }
+
+    // Route 2D: GET /api/prelaunch/discovery-status
+    if (pathname === '/api/prelaunch/discovery-status') {
+      sendJsonResponse(res, 200, getDiscoveryStatus());
+      return;
+    }
+
+    // Route 2E: GET /api/prelaunch/tomorrow
+    if (pathname === '/api/prelaunch/tomorrow') {
+      const watchlist = getTomorrowShortlist();
+      sendJsonResponse(res, 200, {
+        targetDate: getDiscoveryStatus().targetDate,
+        count: watchlist.length,
+        candidates: watchlist
+      });
+      return;
+    }
+
+    // Route 2F: GET /api/prelaunch/sources
+    if (pathname === '/api/prelaunch/sources') {
+      sendJsonResponse(res, 200, {
+        sources: getSourcesStatus()
+      });
+      return;
+    }
+
+    // Route 2G: GET /api/prelaunch/evidence
+    if (pathname === '/api/prelaunch/evidence') {
+      sendJsonResponse(res, 200, getEvidenceReport());
+      return;
+    }
+
+    // Route 2H: GET /api/launch-intelligence/status
+    if (pathname === '/api/launch-intelligence/status') {
+      sendJsonResponse(res, 200, getLaunchIntelligenceStatus());
+      return;
+    }
+
+    // Route 2I: GET /api/launch-intelligence/candidates
+    if (pathname === '/api/launch-intelligence/candidates') {
+      sendJsonResponse(res, 200, getLaunchIntelligenceCandidates());
+      return;
+    }
+
+    // Route 2J: GET /api/launch-intelligence/sources
+    if (pathname === '/api/launch-intelligence/sources') {
+      sendJsonResponse(res, 200, getLaunchIntelligenceSources());
+      return;
+    }
+
+    // Route 2K: GET /api/launch-intelligence/evidence/:candidateId
+    if (pathname.startsWith('/api/launch-intelligence/evidence')) {
+      const parts = pathname.split('/').filter(Boolean);
+      const candidateId = parts[3] || null;
+      if (!candidateId) {
+        sendJsonResponse(res, 400, { error: 'Bad Request', message: 'Candidate ID is required' });
+        return;
+      }
+      const evidence = getLaunchIntelligenceEvidence(candidateId);
+      if (!evidence) {
+        sendJsonResponse(res, 404, { error: 'Not Found', message: `Evidence not found for candidate ID: ${candidateId}` });
+        return;
+      }
+      sendJsonResponse(res, 200, evidence);
+      return;
+    }
+
+    // Route 2L: GET /api/launch-announcements/status
+    if (pathname === '/api/launch-announcements/status') {
+      sendJsonResponse(res, 200, getLaunchAnnouncementsStatus());
+      return;
+    }
+
+    // Route 2M: GET /api/launch-announcements/candidates
+    if (pathname === '/api/launch-announcements/candidates') {
+      sendJsonResponse(res, 200, getLaunchAnnouncementsCandidates());
+      return;
+    }
+
+    // Route 2N: GET /api/launch-announcements/sources
+    if (pathname === '/api/launch-announcements/sources') {
+      sendJsonResponse(res, 200, getLaunchAnnouncementsSources());
+      return;
+    }
+
+    // Route 2O: GET /api/launch-announcements/evidence/:candidateId
+    if (pathname.startsWith('/api/launch-announcements/evidence')) {
+      const parts = pathname.split('/').filter(Boolean);
+      const candidateId = parts[3] || null;
+      if (!candidateId) {
+        sendJsonResponse(res, 400, { error: 'Bad Request', message: 'Candidate ID is required' });
+        return;
+      }
+      const evidence = getLaunchAnnouncementsEvidence(candidateId);
+      if (!evidence) {
+        sendJsonResponse(res, 404, { error: 'Not Found', message: `Evidence not found for candidate ID: ${candidateId}` });
+        return;
+      }
+      sendJsonResponse(res, 200, evidence);
+      return;
+    }
+
+    // Route: GET /api/launch-day-scheduler/status (or /api/launch-day/status)
+    if (pathname === '/api/launch-day-scheduler/status' || pathname === '/api/launch-day/status') {
+      const status = getLaunchDaySchedulerStatus();
+      sendJsonResponse(res, 200, status);
       return;
     }
 
@@ -374,7 +565,7 @@ export function startDashboardServer(portOverride = null) {
         reject(err);
       });
 
-      serverInstance.listen(port, () => {
+      serverInstance.listen(port, '0.0.0.0', () => {
         console.log('====================================================');
         console.log(`[INFO] Read-Only Dashboard API running on port ${port}`);
         console.log(`[INFO] Endpoints: /api/status, /api/candidates, /api/active-trade, /api/risk, /api/trades`);

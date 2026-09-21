@@ -157,6 +157,47 @@ try {
     assert.strictEqual(config.pricePollIntervalMs, 5000);
   });
 
+  // TEST 12: isLiveExecutionAuthorized returns false by default
+  await runTest('TEST 12: isLiveExecutionAuthorized returns false by default (fail-closed)', async () => {
+    const { isLiveExecutionAuthorized } = await import('../src/executionEngine.js');
+    assert.strictEqual(isLiveExecutionAuthorized(), false, 'Live execution authorization must default to false');
+  });
+
+  // TEST 13: Extended Live Execution Methods Fail Closed
+  await runTest('TEST 13: Live execution methods (getWalletBalance, buildSwapTransaction) fail closed', async () => {
+    const liveEngine = new LiveExecutionEngine();
+    try {
+      await liveEngine.getWalletBalance();
+      assert.fail('getWalletBalance should have thrown safety lock error');
+    } catch (err) {
+      assert.ok(err.message.includes('SAFETY LOCK'));
+    }
+    try {
+      await liveEngine.buildSwapTransaction();
+      assert.fail('buildSwapTransaction should have thrown safety lock error');
+    } catch (err) {
+      assert.ok(err.message.includes('SAFETY LOCK'));
+    }
+  });
+
+  // TEST 14: PaperExecutionEngine Instance Immutability
+  await runTest('TEST 14: PaperExecutionEngine instance is frozen and cannot be mutated to LIVE', async () => {
+    const paperEngine = new PaperExecutionEngine();
+    try {
+      paperEngine.mode = 'LIVE';
+    } catch (err) {
+      // TypeError in strict mode when attempting to mutate frozen object
+    }
+    assert.strictEqual(paperEngine.mode, 'PAPER', 'Paper execution engine mode must remain PAPER');
+  });
+
+  // TEST 15: Factory function getExecutionEngine() returns PaperExecutionEngine for PAPER mode
+  await runTest('TEST 15: Factory function getExecutionEngine() returns PaperExecutionEngine for PAPER mode', async () => {
+    const engine = getExecutionEngine();
+    assert.strictEqual(engine.mode, 'PAPER');
+    assert.ok(engine instanceof PaperExecutionEngine);
+  });
+
 } finally {
   resetTradeState();
 }

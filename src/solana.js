@@ -18,24 +18,35 @@ export const connection = new Connection(config.rpcUrl, config.commitment);
  * 
  * @returns {Promise<{ success: boolean, version?: string, slot?: number, error?: string }>}
  */
-export async function testConnection() {
-  try {
-    // Request current node version from Solana RPC
-    const versionInfo = await connection.getVersion();
-    const version = versionInfo && versionInfo['solana-core'] ? versionInfo['solana-core'] : 'Unknown';
+export async function testConnection(retries = 3) {
+  const rpcEndpoints = [
+    config.rpcUrl,
+    'https://solana-rpc.publicnode.com'
+  ];
 
-    // Request the latest block slot height from Solana RPC
-    const slot = await connection.getSlot();
-
-    return {
-      success: true,
-      version: version,
-      slot: slot
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error)
-    };
+  for (const endpoint of rpcEndpoints) {
+    const conn = endpoint === config.rpcUrl ? connection : new Connection(endpoint, config.commitment);
+    for (let i = 0; i < retries; i++) {
+      try {
+        const versionInfo = await conn.getVersion();
+        const version = versionInfo && versionInfo['solana-core'] ? versionInfo['solana-core'] : 'Unknown';
+        const slot = await conn.getSlot();
+        return {
+          success: true,
+          version,
+          slot,
+          endpoint
+        };
+      } catch (err) {
+        if (i < retries - 1) {
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
+    }
   }
+
+  return {
+    success: false,
+    error: 'All Solana RPC endpoints failed to respond after retries.'
+  };
 }

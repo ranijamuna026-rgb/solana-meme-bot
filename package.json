@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "test": "node test/paperTrader.test.js && node test/backtester.test.js && node test/riskManager.test.js && node test/api.test.js && node test/validation.test.js && node test/executionEngine.test.js && node test/simulationLayer.test.js && node test/safetyGate.test.js && node test/endToEndSafety.test.js",
+    "test": "node test/paperTrader.test.js && node test/backtester.test.js && node test/riskManager.test.js && node test/api.test.js && node test/validation.test.js && node test/executionEngine.test.js && node test/simulationLayer.test.js && node test/safetyGate.test.js && node test/endToEndSafety.test.js && node test/filteringAudit.test.js && node test/candidateRankingAudit.test.js && node test/preLaunchEngine.test.js && node test/preLaunchDiscovery.test.js && node test/launchIntelligence.test.js && node test/launchAnnouncementDiscovery.test.js && node test/metaplexGenesisAdapter.test.js && node test/preLaunchPipeline10D.test.js && node test/launchDayVerification10D2.test.js && node test/launchDayScheduler10D3.test.js && node test/walletManager.test.js && node test/dexRouter.test.js && node test/transactionBuilder.test.js && node test/transactionSubmitter.test.js && node test/liveExecutionEngine.test.js && node test/liveIntegration.test.js && node test/liveConfig.test.js && node test/liveSigningBoundary.test.js && node test/controlledSigning.test.js && node test/mainnetSubmission.test.js && node test/transactionConfirmation.test.js && node test/livePositionTracker.test.js && node test/livePositionIntegration.test.js && node test/lifecycleAudit.test.js",
     "backtest": "node src/runBacktest.js"
   },
   "keywords": [

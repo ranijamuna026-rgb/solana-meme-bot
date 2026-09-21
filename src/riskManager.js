@@ -42,6 +42,17 @@ export function resetRiskManagerState() {
 }
 
 /**
+ * Hydrates portfolio state trade timestamps from loaded trade history.
+ * @param {Array<Object>} history 
+ */
+export function hydratePortfolioStateFromHistory(history) {
+  if (!Array.isArray(history)) return;
+  portfolioState.recentTradeTimes = history.map(t => {
+    return t.entryTime ? new Date(t.entryTime).getTime() : (t.entryTimeMs || Date.now());
+  }).filter(t => !isNaN(t) && t > 0);
+}
+
+/**
  * Resets circuit breaker state safely.
  */
 export function resetCircuitBreaker() {
