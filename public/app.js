@@ -498,10 +498,21 @@
       const addr = c.address || c.tokenAddress || 'N/A';
       const price = formatCurrency(c.priceUsd);
       
-      const riskScore = c.riskScore !== undefined ? c.riskScore : (c.riskFilter ? c.riskFilter.score : 0);
-      const strategyScore = c.strategyScore !== undefined ? c.strategyScore : (c.strategy ? c.strategy.score : 0);
+      const riskScore = typeof c.riskScore === 'number'
+        ? c.riskScore
+        : (c.riskFilter && typeof c.riskFilter.riskScore === 'number'
+          ? c.riskFilter.riskScore
+          : (c.riskManager && typeof c.riskManager.riskScore === 'number' ? c.riskManager.riskScore : 0));
+
+      const strategyScore = typeof c.strategyScore === 'number'
+        ? c.strategyScore
+        : (c.strategy && typeof c.strategy.totalScore === 'number'
+          ? c.strategy.totalScore
+          : (typeof c.score === 'number' ? c.score : null));
+
+      const strategyDisplay = strategyScore !== null ? `${strategyScore}/100` : 'N/A';
       
-      const isApproved = (c.riskManager && c.riskManager.approved) || (c.decision === 'APPROVED');
+      const isApproved = (c.riskManager && c.riskManager.approved === true) || (c.decision === 'APPROVED');
       const decisionBadge = isApproved
         ? `<span class="decision-badge approved">APPROVED</span>`
         : `<span class="decision-badge rejected">REJECTED</span>`;
@@ -528,9 +539,9 @@
           </td>
           <td>
             <div class="score-bar-wrapper">
-              <span class="score-num">${strategyScore}/100</span>
+              <span class="score-num">${strategyDisplay}</span>
               <div class="score-track">
-                <div class="score-fill-pink" style="width: ${Math.min(100, Math.max(0, strategyScore))}%;"></div>
+                <div class="score-fill-pink" style="width: ${Math.min(100, Math.max(0, strategyScore || 0))}%;"></div>
               </div>
             </div>
           </td>

@@ -44,7 +44,7 @@ function loadTradeHistory() {
  * @param {Array<Object>} history 
  */
 function saveTradeHistory(history) {
-  if (process.env.NODE_ENV === 'test' || global.IS_TEST_ENV) {
+  if (process.env.NODE_ENV === 'test' || global.IS_TEST_ENV || process.env.JEST_WORKER_ID) {
     return; // Prevent test runs from contaminating production paper_trades_history.json
   }
   try {
@@ -74,7 +74,7 @@ export function formatDuration(ms) {
 export function isGenuineMarketTrade(t) {
   if (!t || typeof t !== 'object') return false;
   if (t.source === 'unit_test') return false;
-  if (t.symbol && (t.symbol.startsWith('TEST_') || t.symbol === 'UNKNOWN')) return false;
+  if (t.symbol && (t.symbol.startsWith('TEST_') || t.symbol === 'UNKNOWN' || t.symbol === 'LIFE')) return false;
   if (t.tokenAddress && (t.tokenAddress.startsWith('TEST_TOKEN_') || t.tokenAddress === 'SO11111111111111111111111111111111111111112')) return false;
   if (t.tokenName && t.tokenName.startsWith('Test ')) return false;
 
@@ -82,6 +82,11 @@ export function isGenuineMarketTrade(t) {
 
   const pnl = Number(t.pnl !== undefined ? t.pnl : t.paperPnlUsd);
   if (isNaN(pnl) || !isFinite(pnl)) return false;
+
+  // Sanity check: Exclude corrupted outlier records (P&L > $500 or P&L % > 100% when max TP is +5%)
+  if (Math.abs(pnl) > 500) return false;
+  const pnlPercent = Number(t.pnlPercent);
+  if (!isNaN(pnlPercent) && Math.abs(pnlPercent) > 100) return false;
 
   const entryPrice = Number(t.entryPrice !== undefined ? t.entryPrice : t.entryPriceUsd);
   const exitPrice = Number(t.exitPrice !== undefined ? t.exitPrice : t.exitPriceUsd);
@@ -344,14 +349,21 @@ export async function processMonitoringCycle(tradeRecord, fetchPriceFn) {
     console.log('\n========================================');
     console.log('TAKE PROFIT HIT');
     console.log('========================================');
-    executePaperSell(tradeRecord, currentPrice, elapsedMs, 'TAKE_PROFIT');
+    // Model simulated limit execution bounded at Take Profit target price (+5%)
+    const targetTpPrice = tradeRecord.entryPrice * (1 + tradeRecord.profitTargetPercent / 100);
+    const exitPrice = Math.min(currentPrice, targetTpPrice);
+    executePaperSell(tradeRecord, exitPrice, elapsedMs, 'TAKE_PROFIT');
   }
   // Requirement 4: Stop Loss Trigger (-3%)
   else if (metrics.pnlPercent <= -tradeRecord.stopLossPercent) {
     console.log('\n========================================');
     console.log('STOP LOSS HIT');
     console.log('========================================');
-    executePaperSell(tradeRecord, currentPrice, elapsedMs, 'STOP_LOSS');
+    // Model simulated stop execution bounded by Stop Loss threshold price (-3% plus slippage)
+    const maxSlippage = config.maxSlippagePercent || 1.0;
+    const targetSlPrice = tradeRecord.entryPrice * (1 - (tradeRecord.stopLossPercent + maxSlippage) / 100);
+    const exitPrice = Math.max(currentPrice, targetSlPrice);
+    executePaperSell(tradeRecord, exitPrice, elapsedMs, 'STOP_LOSS');
   }
   // Requirement 5: Max Hold Time Trigger (5 minutes)
   else if (elapsedMs >= tradeRecord.maxHoldTimeMs) {

@@ -403,9 +403,13 @@ function handleApiRequest(req, res) {
     // Route 5: GET /api/trades
     if (pathname === '/api/trades') {
       const history = getTradeHistory();
+      const genuineTrades = history.filter(isGenuineMarketTrade);
+      const targetTrades = genuineTrades.length > 0 ? genuineTrades : history;
       sendJsonResponse(res, 200, {
-        count: history.length,
-        trades: history
+        count: targetTrades.length,
+        historicalTotalTrades: history.length,
+        genuineMarketTradesCount: genuineTrades.length,
+        trades: targetTrades
       });
       return;
     }

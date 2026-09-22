@@ -4,6 +4,7 @@
 // ============================================================================
 
 import { config } from './config.js';
+import { calculateRiskScore } from './riskManager.js';
 
 /**
  * Evaluates a newly detected token against configurable safety and activity rules.
@@ -13,7 +14,7 @@ import { config } from './config.js';
  * It merely filters out tokens with low liquidity, zero sell activity, or missing data.
  * 
  * @param {Object} token - Token market data collected by monitor.js
- * @returns {{ isCandidate: boolean, result: 'PASS' | 'REJECT', reason?: string, checks: Object }}
+ * @returns {{ isCandidate: boolean, result: 'PASS' | 'REJECT', reason?: string, riskScore: number, riskRating: string, checks: Object }}
  */
 export function evaluateTokenRisk(token) {
   const checks = {
@@ -80,6 +81,8 @@ export function evaluateTokenRisk(token) {
   const resultStatus = isCandidate ? 'PASS' : 'REJECT';
   const primaryReason = isCandidate ? undefined : failureReasons[0];
 
+  const riskAnalysis = calculateRiskScore(token, 70);
+
   // Print risk analysis terminal output
   logRiskAnalysis(token, checks, resultStatus, primaryReason);
 
@@ -87,6 +90,8 @@ export function evaluateTokenRisk(token) {
     isCandidate,
     result: resultStatus,
     reason: primaryReason,
+    riskScore: riskAnalysis.score,
+    riskRating: riskAnalysis.rating,
     checks
   };
 }

@@ -287,11 +287,16 @@ export function evaluateTradeRisk(candidate, strategyResult = null, customNowMs 
   }
 
   // Requirement 6: Minimum Strategy Score Check (70)
-  const strategyScore = strategyResult && typeof strategyResult.totalScore === 'number'
+  const rawStrategyScore = (strategyResult && typeof strategyResult.totalScore === 'number')
     ? strategyResult.totalScore
-    : (candidate.score ?? candidate.strategyScore ?? 70);
+    : (candidate.strategyScore ?? candidate.strategy?.totalScore ?? candidate.score);
 
-  if (isNaN(strategyScore) || strategyScore < config.minStrategyScore) {
+  const hasValidStrategyScore = typeof rawStrategyScore === 'number' && !isNaN(rawStrategyScore) && isFinite(rawStrategyScore);
+  const strategyScore = hasValidStrategyScore ? rawStrategyScore : undefined;
+
+  if (!hasValidStrategyScore) {
+    reasons.push('Missing or invalid strategy score');
+  } else if (strategyScore < config.minStrategyScore) {
     reasons.push(`Strategy score below minimum threshold (${strategyScore} < ${config.minStrategyScore})`);
   } else {
     checks.strategyScore = true;
