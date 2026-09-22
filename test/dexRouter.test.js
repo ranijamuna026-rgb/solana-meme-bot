@@ -180,6 +180,29 @@ try {
     assert.throws(() => router.validateQuoteFreshness(staleQuote), /Stale quote rejected/);
   });
 
+  // 10B. Complete quote validation test
+  runTest('validateQuote approves valid quote and rejects invalid token pair, stale quote, or invalid output', () => {
+    const router = new DEXRouter({ quoteFreshnessMs: 3000 });
+    const validQuote = {
+      inputMint: SOL_MINT,
+      outputMint: USDC_MINT,
+      inAmount: '10',
+      outAmount: '1000',
+      slippageBps: 50,
+      timestamp: Date.now()
+    };
+    assert.strictEqual(router.validateQuote(validQuote), true);
+
+    // Identical mint pair rejection
+    assert.throws(() => router.validateQuote({ ...validQuote, outputMint: SOL_MINT }), /Invalid mint pair/);
+    // Invalid output amount rejection
+    assert.throws(() => router.validateQuote({ ...validQuote, outAmount: '0' }), /Invalid output amount/);
+    // Excessive slippage rejection
+    assert.throws(() => router.validateQuote({ ...validQuote, slippageBps: 150 }), /Excessive slippage/);
+    // Stale quote rejection
+    assert.throws(() => router.validateQuote({ ...validQuote, timestamp: Date.now() - 4000 }), /Stale quote rejected/);
+  });
+
   // 11. Slippage > 1.0% (100 bps) rejection
   runTest('Slippage exceeding maximum allowed 1.0% (100 bps) is strictly rejected', () => {
     const router = new DEXRouter();

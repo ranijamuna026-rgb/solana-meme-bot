@@ -115,6 +115,31 @@ export class DEXRouter {
   }
 
   /**
+   * Validates a complete swap quote object against all safety constraints.
+   * Checks token pair, quote freshness, output amount, and slippage limits.
+   * 
+   * @param {object} quote 
+   * @returns {boolean}
+   */
+  validateQuote(quote) {
+    if (!quote || typeof quote !== 'object') {
+      throw new Error('Invalid quote: Quote object is required');
+    }
+    this.validateMint(quote.inputMint, 'input token mint');
+    this.validateMint(quote.outputMint, 'output token mint');
+    if (quote.inputMint === quote.outputMint) {
+      throw new Error('Invalid mint pair: input mint and output mint cannot be identical');
+    }
+    const outAmountNum = Number(quote.outAmount);
+    if (!Number.isFinite(outAmountNum) || outAmountNum <= 0) {
+      throw new Error(`Invalid output amount: Expected positive output amount, received '${quote.outAmount}'`);
+    }
+    this.validateSlippage(quote.slippageBps);
+    this.validateQuoteFreshness(quote);
+    return true;
+  }
+
+  /**
    * Obtains a buy swap quote abstraction suitable for future Jupiter integration.
    * @param {string} inputMint 
    * @param {string} outputMint 
