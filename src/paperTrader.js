@@ -460,7 +460,8 @@ export function logPaperTradingSummary() {
   const totalTrades = tradeHistory.length;
   const winning = tradeHistory.filter(t => t.pnl > 0).length;
   const losing = tradeHistory.filter(t => t.pnl < 0).length;
-  const winRate = totalTrades > 0 ? ((winning / totalTrades) * 100).toFixed(0) : '0';
+  const breakeven = tradeHistory.filter(t => t.pnl === 0).length;
+  const winRate = totalTrades > 0 ? ((winning / totalTrades) * 100).toFixed(2) : '0.00';
   const totalPnlUsd = tradeHistory.reduce((sum, t) => sum + (t.pnl || 0), 0);
   const totalPnlFormatted = (totalPnlUsd >= 0 ? '+' : '-') + `$${Math.abs(totalPnlUsd).toFixed(2)}`;
 
@@ -469,6 +470,7 @@ export function logPaperTradingSummary() {
   console.log(`Total Trades : ${totalTrades}`);
   console.log(`Winning      : ${winning}`);
   console.log(`Losing       : ${losing}`);
+  console.log(`Breakeven    : ${breakeven}`);
   console.log(`Win Rate     : ${winRate}%`);
   console.log(`Total P&L    : ${totalPnlFormatted}`);
   console.log('=====================');

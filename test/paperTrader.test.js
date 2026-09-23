@@ -1,3 +1,6 @@
+process.env.NODE_ENV = 'test';
+global.IS_TEST_ENV = true;
+
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
