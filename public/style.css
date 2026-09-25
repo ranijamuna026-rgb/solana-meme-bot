@@ -1015,4 +1015,222 @@ html, body {
   letter-spacing: 0.5px;
 }
 
+/* OBSERVABILITY & LIFECYCLE UPGRADE STYLES */
+.selected-trade-card {
+  background-color: var(--bg-card-black);
+  border: 1px solid var(--pink-primary);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.selected-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--pink-border);
+}
+
+.paper-badge-solid {
+  font-size: 11px;
+  font-weight: 800;
+  color: #000;
+  background-color: var(--pink-bright);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.5px;
+}
+
+.selected-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.sel-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sel-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.sel-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+/* LAUNCH-DAY CROSS-VERIFICATION CHECKS PANEL */
+.verification-checks-card {
+  background-color: var(--bg-card-black);
+  border: 1px solid var(--pink-border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+}
+
+.verification-checks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.check-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-pure-black);
+  border: 1px solid var(--pink-border);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+}
+
+.check-label {
+  font-size: 12px;
+  color: var(--text-white);
+  font-weight: 600;
+}
+
+.check-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.check-badge.pass {
+  color: #00FF7F;
+  background-color: rgba(0, 255, 127, 0.15);
+  border: 1px solid #00FF7F;
+}
+
+.check-badge.fail {
+  color: #FF4D4D;
+  background-color: rgba(255, 77, 77, 0.15);
+  border: 1px solid #FF4D4D;
+}
+
+.check-badge.not-checked {
+  color: var(--text-muted);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--text-muted);
+}
+
+/* DECISION BADGES EXTENSIONS */
+.decision-badge.watching {
+  color: #00BFFF;
+  background-color: rgba(0, 191, 255, 0.15);
+  border-color: #00BFFF;
+}
+
+/* TRADE LIFECYCLE STEPPER (MODAL) */
+.lifecycle-banner-top {
+  display: flex;
+  justify-content: space-between;
+  background-color: var(--bg-pure-black);
+  border: 1px solid var(--pink-primary);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: var(--pink-bright);
+}
+
+.lifecycle-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepper-step {
+  background-color: var(--bg-pure-black);
+  border: 1px solid var(--pink-border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+
+.stepper-step.highlight-step {
+  border-color: var(--pink-primary);
+  box-shadow: 0 0 10px rgba(255, 105, 180, 0.15);
+}
+
+.stepper-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background-color: var(--pink-primary);
+  color: #000;
+  font-weight: 800;
+  border-radius: 50%;
+  font-size: 11px;
+}
+
+.step-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-white);
+  letter-spacing: 0.5px;
+  flex-grow: 1;
+}
+
+.step-status {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+.step-status.pass {
+  color: #00FF7F;
+  background-color: rgba(0, 255, 127, 0.15);
+  border: 1px solid #00FF7F;
+}
+
+.step-status.fail {
+  color: #FF4D4D;
+  background-color: rgba(255, 77, 77, 0.15);
+  border: 1px solid #FF4D4D;
+}
+
+.step-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-left: 32px;
+}
+
+.step-details strong {
+  color: var(--text-white);
+}
+
+.stepper-arrow {
+  text-align: center;
+  color: var(--pink-primary);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+
 

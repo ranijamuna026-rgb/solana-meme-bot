@@ -128,6 +128,11 @@ export function getActiveTrade() {
       quantity: activeTradeRecord.quantity,
       entryTime: activeTradeRecord.buyTimestamp,
       entryTimeMs: activeTradeRecord.entryTimeMs,
+      riskScore: activeTradeRecord.riskScore ?? null,
+      strategyScore: activeTradeRecord.strategyScore ?? null,
+      liquidity: activeTradeRecord.liquidity ?? null,
+      volume5m: activeTradeRecord.volume5m ?? null,
+      crossVerificationResult: activeTradeRecord.crossVerificationResult ?? null,
       elapsedMs: elapsedMs,
       elapsedTimeStr: formatDuration(elapsedMs),
       pnlUsd: metrics.pnlUsd,
@@ -245,8 +250,14 @@ export async function executePaperTrade(candidateToken, customFetchPriceFnOrSize
   registerActiveTrade(candidateToken.address, entryTimeMs);
 
 
+  const riskScore = candidateToken.riskScore ?? candidateToken.riskManager?.riskScore ?? candidateToken.riskFilter?.riskScore ?? null;
+  const strategyScore = candidateToken.strategyScore ?? candidateToken.strategy?.totalScore ?? candidateToken.score ?? null;
+  const liquidity = candidateToken.liquidityUsd ?? candidateToken.liquidity ?? null;
+  const volume5m = candidateToken.volume5mUsd ?? candidateToken.volume5m ?? null;
+  const crossVerificationResult = candidateToken.crossVerificationResult || candidateToken.verificationDecision || candidateToken.decision || (candidateToken.source === 'pre_launch' ? 'VERIFIED' : (riskScore !== null && strategyScore !== null ? 'PASSED' : null));
+
   const tradeRecord = {
-    address: candidateToken.address,
+    address: candidateToken.address || candidateToken.tokenAddress || 'UNKNOWN',
     symbol: candidateToken.symbol || 'UNKNOWN',
     name: candidateToken.name || 'Unknown',
     entryPrice,
@@ -254,6 +265,11 @@ export async function executePaperTrade(candidateToken, customFetchPriceFnOrSize
     quantity,
     entryTimeMs,
     buyTimestamp,
+    riskScore,
+    strategyScore,
+    liquidity,
+    volume5m,
+    crossVerificationResult,
     maxHoldMinutes: config.maxHoldMinutes,
     maxHoldTimeMs: config.maxHoldTimeMs,
     profitTargetPercent: config.profitTargetPercent,
@@ -434,6 +450,11 @@ export function executePaperSell(tradeRecord, exitPrice, elapsedMs, exitReason) 
     durationSeconds: Math.max(0, Math.round(elapsedMs / 1000)),
     durationMs: Math.max(0, elapsedMs),
     exitReason,
+    riskScore: tradeRecord.riskScore ?? null,
+    strategyScore: tradeRecord.strategyScore ?? null,
+    liquidity: tradeRecord.liquidity ?? null,
+    volume5m: tradeRecord.volume5m ?? null,
+    crossVerificationResult: tradeRecord.crossVerificationResult ?? null,
     source: tradeRecord.source || ((process.env.NODE_ENV === 'test' || global.IS_TEST_ENV) ? 'unit_test' : 'market_data'),
     execution: tradeRecord.execution || 'paper'
   };

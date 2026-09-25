@@ -47,6 +47,10 @@
           <span class="nav-icon">🔒</span>
           <span class="nav-label">Risk Limits</span>
         </a>
+        <a href="#tomorrow-watchlist" class="nav-item" id="nav-tomorrow-watchlist">
+          <span class="nav-icon">📅</span>
+          <span class="nav-label">Tomorrow Watchlist</span>
+        </a>
         <a href="#trade-history" class="nav-item" id="nav-trade-history">
           <span class="nav-icon">📜</span>
           <span class="nav-label">Trade History</span>
@@ -191,7 +195,7 @@
             <h2 class="section-title">
               <span class="title-pink-bar"></span> ACTIVE PAPER TRADE
             </h2>
-            <div class="trade-mode-tag">SIMULATED POSITION</div>
+            <div class="trade-mode-tag">[ PAPER TRADING ONLY - SIMULATED ]</div>
           </div>
 
           <div id="active-trade-container" class="active-trade-card">
@@ -199,7 +203,7 @@
             <div class="empty-state-trade">
               <div class="empty-icon">⏳</div>
               <div class="empty-title">NO ACTIVE PAPER TRADE</div>
-              <div class="empty-desc">The bot is currently scanning Solana mainnet DEX pairs for valid candidate setups meeting risk criteria.</div>
+              <div class="empty-desc">The bot is currently scanning Solana mainnet DEX pairs for valid candidate setups meeting risk criteria. [ PAPER TRADING ONLY ]</div>
             </div>
           </div>
         </div>
@@ -239,6 +243,38 @@
               <tbody id="candidates-tbody">
                 <tr>
                   <td colspan="8" class="table-loading">Scanning market candidates...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TOMORROW LAUNCH WATCHLIST SECTION -->
+        <div id="tomorrow-watchlist" class="section-container">
+          <div class="section-header flex-between">
+            <div>
+              <h2 class="section-title">
+                <span class="title-pink-bar"></span> TOMORROW LAUNCH WATCHLIST
+              </h2>
+              <div class="section-desc">Pre-Launch Candidates & Scheduled Solana Token Discovery</div>
+            </div>
+            <div class="trade-mode-tag">PRE-LAUNCH MONITORING</div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="pink-table" id="tomorrow-table">
+              <thead>
+                <tr>
+                  <th>TOKEN</th>
+                  <th>EXPECTED LAUNCH</th>
+                  <th>SOURCE / CONFIDENCE</th>
+                  <th>CROSS-VERIFICATION</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody id="tomorrow-tbody">
+                <tr>
+                  <td colspan="5" class="table-loading">Loading pre-launch watchlist...</td>
                 </tr>
               </tbody>
             </table>
@@ -463,26 +499,36 @@
             <h2 class="section-title">
               <span class="title-pink-bar"></span> TRADE HISTORY
             </h2>
-            <div class="section-desc">Completed Paper Trades & Performance Log</div>
+            <div class="section-desc">Completed Paper Trades & Lifecycle Analytics</div>
           </div>
 
           <div class="table-responsive">
             <table class="pink-table" id="history-table">
               <thead>
                 <tr>
-                  <th>TOKEN / SYMBOL</th>
+                  <th>TOKEN</th>
+                  <th>MINT</th>
+                  <th>BUY TIME</th>
                   <th>ENTRY PRICE</th>
+                  <th>SELL TIME</th>
                   <th>EXIT PRICE</th>
-                  <th>P&L ($ / %)</th>
+                  <th>INVESTMENT</th>
+                  <th>P/L $</th>
+                  <th>P/L %</th>
                   <th>RESULT</th>
                   <th>DURATION</th>
                   <th>EXIT REASON</th>
-                  <th>TIMESTAMP</th>
+                  <th>RISK SCORE</th>
+                  <th>STRATEGY SCORE</th>
+                  <th>LIQUIDITY</th>
+                  <th>5M VOLUME</th>
+                  <th>CROSS-VERIFICATION</th>
+                  <th>LIFECYCLE</th>
                 </tr>
               </thead>
               <tbody id="history-tbody">
                 <tr>
-                  <td colspan="8" class="table-loading">Loading trade history...</td>
+                  <td colspan="18" class="table-loading">Loading trade history...</td>
                 </tr>
               </tbody>
             </table>
