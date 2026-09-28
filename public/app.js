@@ -23,14 +23,16 @@
     lastSyncTime: null,
     autoRefreshInterval: null,
     isFetchPending: false,
-    consecutiveFetchFailures: 0
+    consecutiveFetchFailures: 0,
+    selectedTradeForChart: null,
+    chartLiveInterval: null
   };
 
   // DOM Elements Cache
   const elements = {
     // Navigation
     navItems: document.querySelectorAll('.nav-item'),
-    
+
     // Top Bar & Clock
     liveClock: document.getElementById('live-time'),
     btnRefresh: document.getElementById('btn-refresh'),
@@ -115,12 +117,37 @@
     // Trade History Table
     historyTableBody: document.getElementById('history-tbody'),
 
-    // Modal
+    // Candidate Inspector Modal
     modal: document.getElementById('candidate-modal'),
     modalTitle: document.getElementById('modal-candidate-title'),
     modalBody: document.getElementById('modal-candidate-body'),
     btnModalClose: document.getElementById('btn-modal-close'),
-    btnModalDismiss: document.getElementById('btn-modal-dismiss')
+    btnModalDismiss: document.getElementById('btn-modal-dismiss'),
+
+    // Trade Chart Modal Elements
+    chartModal: document.getElementById('trade-chart-modal'),
+    chartModalTitle: document.getElementById('chart-modal-title'),
+    chartModalStatus: document.getElementById('chart-modal-status'),
+    btnChartModalClose: document.getElementById('btn-chart-modal-close'),
+    btnChartModalDismiss: document.getElementById('btn-chart-modal-dismiss'),
+    chartSumToken: document.getElementById('chart-sum-token'),
+    chartSumAddress: document.getElementById('chart-sum-address'),
+    chartSumEntryPrice: document.getElementById('chart-sum-entry-price'),
+    chartSumEntryTime: document.getElementById('chart-sum-entry-time'),
+    chartSumExitLabel: document.getElementById('chart-sum-exit-label'),
+    chartSumCurrentPrice: document.getElementById('chart-sum-current-price'),
+    chartSumExitTime: document.getElementById('chart-sum-exit-time'),
+    chartSumPnlPct: document.getElementById('chart-sum-pnl-pct'),
+    chartSumPnlUsd: document.getElementById('chart-sum-pnl-usd'),
+    chartSumDuration: document.getElementById('chart-sum-duration'),
+    chartSumPosSize: document.getElementById('chart-sum-pos-size'),
+    chartSumScores: document.getElementById('chart-sum-scores'),
+    chartSumReason: document.getElementById('chart-sum-reason'),
+    chartCanvas: document.getElementById('trade-chart-canvas'),
+    chartTooltip: document.getElementById('chart-tooltip'),
+    chartEmptyState: document.getElementById('chart-empty-state'),
+    chartLiveIndicator: document.getElementById('chart-live-indicator'),
+    chartTimelineStepper: document.getElementById('chart-timeline-stepper')
   };
 
   // Helper Utilities
@@ -301,8 +328,8 @@
       elements.valTradesCount.textContent = v.marketPaperTrades || 0;
     }
     if (elements.valMinTarget) {
-      elements.valMinTarget.textContent = isCompleted 
-        ? `${v.marketPaperTrades || 100} / 100 (100%)` 
+      elements.valMinTarget.textContent = isCompleted
+        ? `${v.marketPaperTrades || 100} / 100 (100%)`
         : `${v.marketPaperTrades || 0} / ${v.targetMinimum || 100} (${v.progressMinimumPercent || 0}%)`;
     }
     if (elements.valRecTarget) {
@@ -424,7 +451,10 @@
       <div class="selected-trade-card">
         <div class="selected-card-header">
           <div class="card-header-sm">CURRENT SELECTED PAPER TRADE</div>
-          <span class="paper-badge-solid">[ PAPER TRADING ONLY - SIMULATED ]</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-pink-solid btn-view-active-chart" style="font-size: 11px; padding: 4px 10px;">VIEW LIVE CHART 📈</button>
+            <span class="paper-badge-solid">[ PAPER TRADING ONLY - SIMULATED ]</span>
+          </div>
         </div>
         <div class="selected-card-grid">
           <div class="sel-item"><span class="sel-label">TOKEN</span><span class="sel-val pink-text">${t.symbol || 'UNKNOWN'} (${t.name || 'Unknown'})</span></div>
@@ -552,7 +582,7 @@
       const name = c.name || symbol;
       const addr = c.address || c.tokenAddress || 'N/A';
       const price = formatCurrency(c.priceUsd);
-      
+
       const riskScore = typeof c.riskScore === 'number'
         ? c.riskScore
         : (c.riskFilter && typeof c.riskFilter.riskScore === 'number'
@@ -566,7 +596,7 @@
           : (typeof c.score === 'number' ? c.score : null));
 
       const strategyDisplay = strategyScore !== null ? `${strategyScore}/100` : 'N/A';
-      
+
       const isApproved = (c.riskManager && c.riskManager.approved === true) || (c.decision === 'APPROVED');
       const decisionBadge = isApproved
         ? `<span class="decision-badge approved">APPROVED</span>`
@@ -637,7 +667,7 @@
       const source = cand.source || cand.platform || 'Public Feed';
       const confidence = cand.dataConfidence || cand.confidence || 'EXPECTED';
       const crossVer = (cand.socialLinks && cand.socialLinks.length > 0) ? `VERIFIED (${cand.socialLinks.length} Links)` : 'VERIFIED';
-      
+
       const rawStatus = cand.status || 'WATCH';
       let statusBadge = `<span class="decision-badge watching">WATCHING</span>`;
 
@@ -826,7 +856,10 @@
           <td>${volumeDisplay}</td>
           <td><code style="color: var(--pink-bright);">${crossVerDisplay}</code></td>
           <td>
-            <button class="btn-pink-outline btn-trade-lifecycle" data-idx="${idx}">VIEW LIFECYCLE</button>
+            <div class="btn-trade-action-group">
+              <button class="btn-pink-solid btn-view-chart" data-trade-id="${t.tradeId || ''}" data-idx="${idx}" style="font-size: 11px; padding: 4px 8px;">VIEW CHART 📈</button>
+              <button class="btn-pink-outline btn-trade-lifecycle" data-idx="${idx}" style="font-size: 11px; padding: 4px 8px;">LIFECYCLE</button>
+            </div>
           </td>
         </tr>
       `;
@@ -1085,6 +1118,481 @@
         if (e.target === elements.modal) hideModal();
       });
     }
+
+    // Trade Chart Modal Triggers & Event Delegation
+    if (elements.btnChartModalClose) elements.btnChartModalClose.addEventListener('click', closeTradeChartModal);
+    if (elements.btnChartModalDismiss) elements.btnChartModalDismiss.addEventListener('click', closeTradeChartModal);
+    if (elements.chartModal) {
+      elements.chartModal.addEventListener('click', (e) => {
+        if (e.target === elements.chartModal) closeTradeChartModal();
+      });
+    }
+
+    // Active Trade Card "VIEW LIVE CHART" Button Listener
+    if (elements.activeTradeContainer) {
+      elements.activeTradeContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-view-active-chart');
+        if (btn) {
+          if (state.activeTrade && state.activeTrade.active && state.activeTrade.trade) {
+            showTradeChartModal(state.activeTrade.trade);
+          }
+        }
+      });
+    }
+
+    // Trade History Table "VIEW CHART" Button Listener
+    if (elements.historyTableBody) {
+      elements.historyTableBody.addEventListener('click', (e) => {
+        const chartBtn = e.target.closest('.btn-view-chart');
+        if (chartBtn) {
+          const tradeId = chartBtn.getAttribute('data-trade-id');
+          const idx = parseInt(chartBtn.getAttribute('data-idx'), 10);
+          const trades = state.trades || [];
+          const trade = (tradeId && trades.find(t => t.tradeId === tradeId)) || trades[idx];
+          if (trade) {
+            showTradeChartModal(trade);
+          }
+        }
+      });
+    }
+
+    // Initialize Canvas Hover Tooltip
+    setupChartHoverTooltip();
+  }
+
+  // Canvas Charting Engine
+  function drawTradeChart(trade) {
+    const canvas = elements.chartCanvas;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const width = rect.width || 900;
+    const height = rect.height || 340;
+    canvas.width = width * (window.devicePixelRatio || 1);
+    canvas.height = height * (window.devicePixelRatio || 1);
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+
+    ctx.clearRect(0, 0, width, height);
+
+    const priceHistory = (trade && Array.isArray(trade.priceHistory) && trade.priceHistory.length >= 1)
+      ? trade.priceHistory
+      : [];
+
+    const emptyState = elements.chartEmptyState;
+    if (priceHistory.length === 0) {
+      if (emptyState) emptyState.classList.remove('hidden');
+      return;
+    } else {
+      if (emptyState) emptyState.classList.add('hidden');
+    }
+
+    const entryPrice = Number(trade.entryPrice ?? trade.entryPriceUsd ?? priceHistory[0].price);
+    const tpPct = Number(trade.profitTargetPercent || 5);
+    const slPct = Number(trade.stopLossPercent || 3);
+    const tpPrice = entryPrice * (1 + tpPct / 100);
+    const slPrice = entryPrice * (1 - slPct / 100);
+    const exitPrice = (trade.status === 'CLOSED' || trade.exitPrice) ? Number(trade.exitPrice ?? priceHistory[priceHistory.length - 1].price) : null;
+
+    let allPrices = priceHistory.map(p => Number(p.price)).filter(p => !isNaN(p) && p > 0);
+    allPrices.push(entryPrice, tpPrice, slPrice);
+    if (exitPrice !== null) allPrices.push(exitPrice);
+
+    let minP = Math.min(...allPrices);
+    let maxP = Math.max(...allPrices);
+    const priceSpread = maxP - minP || minP * 0.02;
+
+    minP = Math.max(0, minP - priceSpread * 0.1);
+    maxP = maxP + priceSpread * 0.1;
+
+    const paddingLeft = 80;
+    const paddingRight = 110;
+    const paddingTop = 30;
+    const paddingBottom = 40;
+    const graphW = width - paddingLeft - paddingRight;
+    const graphH = height - paddingTop - paddingBottom;
+
+    function getY(price) {
+      if (maxP === minP) return paddingTop + graphH / 2;
+      return paddingTop + graphH - ((price - minP) / (maxP - minP)) * graphH;
+    }
+
+    const minTimeMs = priceHistory[0].timestampMs || new Date(priceHistory[0].timestamp).getTime();
+    const maxTimeMs = priceHistory[priceHistory.length - 1].timestampMs || new Date(priceHistory[priceHistory.length - 1].timestamp).getTime();
+    const timeSpread = Math.max(1000, maxTimeMs - minTimeMs);
+
+    function getX(timestampMs) {
+      if (timeSpread === 0 || priceHistory.length === 1) return paddingLeft + graphW / 2;
+      return paddingLeft + ((timestampMs - minTimeMs) / timeSpread) * graphW;
+    }
+
+    // 1. Grid lines & Y Axis Labels
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+    ctx.lineWidth = 1;
+
+    const yGridTicks = 5;
+    for (let i = 0; i <= yGridTicks; i++) {
+      const pVal = minP + (i / yGridTicks) * (maxP - minP);
+      const yPos = getY(pVal);
+
+      ctx.beginPath();
+      ctx.moveTo(paddingLeft, yPos);
+      ctx.lineTo(width - paddingRight, yPos);
+      ctx.stroke();
+
+      ctx.fillStyle = '#A0A0B0';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(formatCurrency(pVal, 6), paddingLeft - 8, yPos + 3);
+    }
+
+    // X Axis Labels
+    const xGridTicks = Math.min(6, priceHistory.length);
+    for (let i = 0; i < xGridTicks; i++) {
+      const idx = Math.floor((i / (xGridTicks - 1 || 1)) * (priceHistory.length - 1));
+      const pt = priceHistory[idx];
+      const tMs = pt.timestampMs || new Date(pt.timestamp).getTime();
+      const xPos = getX(tMs);
+      const timeLabel = new Date(tMs).toLocaleTimeString();
+
+      ctx.fillStyle = '#A0A0B0';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(timeLabel, xPos, height - paddingBottom + 16);
+    }
+
+    // 2. Horizontal Lines (TP, SL, Entry)
+    // TAKE PROFIT (+5%) LINE
+    const yTP = getY(tpPrice);
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = '#00E5FF';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, yTP);
+    ctx.lineTo(width - paddingRight, yTP);
+    ctx.stroke();
+
+    ctx.fillStyle = '#00E5FF';
+    ctx.font = 'bold 10px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`TP +${tpPct}% (${formatCurrency(tpPrice, 6)})`, width - paddingRight + 6, yTP + 3);
+
+    // STOP LOSS (-3%) LINE
+    const ySL = getY(slPrice);
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = '#FF1744';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, ySL);
+    ctx.lineTo(width - paddingRight, ySL);
+    ctx.stroke();
+
+    ctx.fillStyle = '#FF1744';
+    ctx.font = 'bold 10px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`SL -${slPct}% (${formatCurrency(slPrice, 6)})`, width - paddingRight + 6, ySL + 3);
+
+    // ENTRY PRICE LINE
+    const yEntry = getY(entryPrice);
+    ctx.setLineDash([2, 4]);
+    ctx.strokeStyle = '#00FF7F';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, yEntry);
+    ctx.lineTo(width - paddingRight, yEntry);
+    ctx.stroke();
+    ctx.setLineDash([]); // Reset dash
+
+    ctx.fillStyle = '#00FF7F';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`ENTRY (${formatCurrency(entryPrice, 6)})`, width - paddingRight + 6, yEntry + 3);
+
+    // 3. Price Curve & Gradient Fill
+    const points = priceHistory.map(pt => ({
+      x: getX(pt.timestampMs || new Date(pt.timestamp).getTime()),
+      y: getY(pt.price),
+      price: pt.price,
+      timestamp: pt.timestamp,
+      event: pt.event
+    }));
+
+    if (points.length > 0) {
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+
+      const gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
+      gradient.addColorStop(0, 'rgba(255, 105, 180, 0.35)');
+      gradient.addColorStop(1, 'rgba(255, 105, 180, 0.0)');
+
+      ctx.lineTo(points[points.length - 1].x, height - paddingBottom);
+      ctx.lineTo(points[0].x, height - paddingBottom);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // Line Stroke
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      ctx.strokeStyle = '#FF69B4';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+
+    // 4. Draw Markers: BUY, SELL, Ticks
+    points.forEach((pt, i) => {
+      const isFirst = i === 0 || pt.event === 'BUY';
+      const isLast = (i === points.length - 1 && trade.status !== 'ACTIVE' && trade.status !== 'OPEN') || pt.event === 'SELL';
+
+      if (isFirst) {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#00FF7F';
+        ctx.fill();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#00FF7F';
+        ctx.font = 'bold 11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Paper Buy ●', pt.x, pt.y - 12);
+      } else if (isLast) {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#FF4D4D';
+        ctx.fill();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        const reasonText = trade.exitReason ? `Paper Sell (${trade.exitReason}) ●` : 'Paper Sell ●';
+        ctx.fillStyle = '#FF4D4D';
+        ctx.font = 'bold 11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(reasonText, pt.x, pt.y + 20);
+      } else {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#FF69B4';
+        ctx.fill();
+      }
+    });
+
+    canvas._chartPoints = points;
+    canvas._chartMeta = { entryPrice, tpPrice, slPrice, minP, maxP, paddingLeft, paddingRight, paddingTop, paddingBottom, width, height };
+  }
+
+  function setupChartHoverTooltip() {
+    const canvas = elements.chartCanvas;
+    const tooltip = elements.chartTooltip;
+    if (!canvas || !tooltip) return;
+
+    canvas.addEventListener('mousemove', (e) => {
+      const points = canvas._chartPoints;
+      if (!points || points.length === 0) {
+        tooltip.classList.add('hidden');
+        return;
+      }
+
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+
+      let closestPt = points[0];
+      let minDist = Math.abs(mouseX - points[0].x);
+
+      for (let i = 1; i < points.length; i++) {
+        const dist = Math.abs(mouseX - points[i].x);
+        if (dist < minDist) {
+          minDist = dist;
+          closestPt = points[i];
+        }
+      }
+
+      if (minDist < 60) {
+        const meta = canvas._chartMeta || {};
+        const entryPrice = meta.entryPrice || closestPt.price;
+        const pnlPct = ((closestPt.price - entryPrice) / entryPrice) * 100;
+        const pnlStr = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+        const timeStr = new Date(closestPt.timestamp).toLocaleTimeString();
+
+        tooltip.innerHTML = `
+          <div>Time: <strong>${timeStr}</strong></div>
+          <div>Price: <strong>${formatCurrency(closestPt.price, 6)}</strong></div>
+          <div>P/L: <strong style="color: ${pnlPct >= 0 ? '#FF69B4' : '#FF4D4D'};">${pnlStr}</strong></div>
+          ${closestPt.event ? `<div style="color: #00FF7F; font-weight: 800;">${closestPt.event} EVENT</div>` : ''}
+        `;
+
+        tooltip.style.left = `${Math.min(rect.width - 160, Math.max(10, closestPt.x - 60))}px`;
+        tooltip.style.top = `${Math.max(10, closestPt.y - 65)}px`;
+        tooltip.classList.remove('hidden');
+      } else {
+        tooltip.classList.add('hidden');
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      if (tooltip) tooltip.classList.add('hidden');
+    });
+  }
+
+  function showTradeChartModal(trade) {
+    if (!trade) return;
+    state.selectedTradeForChart = trade;
+
+    const modal = elements.chartModal;
+    if (!modal) return;
+
+    const symbol = trade.symbol || 'TOKEN';
+    const name = trade.name || trade.tokenName || symbol;
+    const addr = trade.address || trade.tokenAddress || 'N/A';
+    const isOpen = trade.status === 'ACTIVE' || trade.status === 'OPEN' || (!trade.exitTime && trade.entryTime);
+    const statusText = isOpen ? 'OPEN' : 'CLOSED';
+
+    const entryPrice = Number(trade.entryPrice ?? trade.entryPriceUsd ?? 0);
+    const currentOrExitPrice = Number(isOpen ? (trade.currentPrice ?? entryPrice) : (trade.exitPrice ?? entryPrice));
+    const pnlPct = Number(trade.pnlPercent ?? trade.pnlPct ?? (((currentOrExitPrice - entryPrice) / (entryPrice || 1)) * 100));
+    const pnlUsd = Number(trade.pnlUsd ?? trade.pnl ?? (trade.investmentUsd ? (trade.investmentUsd * pnlPct / 100) : 0));
+    const posSizeUsd = Number(trade.investmentUsd ?? trade.investment ?? 10);
+    const entryTimeStr = trade.entryTime ? new Date(trade.entryTime).toLocaleString() : (trade.buyTimestamp ? new Date(trade.buyTimestamp).toLocaleString() : 'N/A');
+    const exitTimeStr = isOpen ? 'Live Monitoring' : (trade.exitTime ? new Date(trade.exitTime).toLocaleString() : 'N/A');
+    const durationStr = trade.holdDuration || formatSeconds(trade.durationSeconds || (trade.elapsedMs ? trade.elapsedMs / 1000 : 0));
+
+    if (elements.chartModalTitle) elements.chartModalTitle.textContent = `TRADE CHART: ${symbol} (${name})`;
+    if (elements.chartModalStatus) {
+      elements.chartModalStatus.textContent = statusText;
+      elements.chartModalStatus.className = `trade-status-badge ${isOpen ? 'open' : 'closed'}`;
+    }
+
+    if (elements.chartSumToken) elements.chartSumToken.textContent = `${symbol} (${name})`;
+    if (elements.chartSumAddress) elements.chartSumAddress.textContent = truncateAddress(addr);
+    if (elements.chartSumEntryPrice) elements.chartSumEntryPrice.textContent = formatCurrency(entryPrice, 6);
+    if (elements.chartSumEntryTime) elements.chartSumEntryTime.textContent = entryTimeStr;
+
+    if (elements.chartSumExitLabel) elements.chartSumExitLabel.textContent = isOpen ? 'CURRENT PRICE' : 'EXIT PRICE';
+    if (elements.chartSumCurrentPrice) elements.chartSumCurrentPrice.textContent = formatCurrency(currentOrExitPrice, 6);
+    if (elements.chartSumExitTime) elements.chartSumExitTime.textContent = exitTimeStr;
+
+    if (elements.chartSumPnlPct) {
+      elements.chartSumPnlPct.textContent = formatPercent(pnlPct);
+      elements.chartSumPnlPct.style.color = pnlPct >= 0 ? '#FF69B4' : '#FFFFFF';
+    }
+    if (elements.chartSumPnlUsd) elements.chartSumPnlUsd.textContent = formatCurrency(pnlUsd, 2) + ' USD';
+
+    if (elements.chartSumDuration) elements.chartSumDuration.textContent = durationStr;
+    if (elements.chartSumPosSize) elements.chartSumPosSize.textContent = `Size: ${formatCurrency(posSizeUsd, 2)}`;
+
+    const riskStr = trade.riskScore !== null && trade.riskScore !== undefined ? trade.riskScore : 'Passed';
+    const stratStr = trade.strategyScore !== null && trade.strategyScore !== undefined ? trade.strategyScore : 'Passed';
+    if (elements.chartSumScores) elements.chartSumScores.textContent = `Risk: ${riskStr} | Strat: ${stratStr}`;
+    if (elements.chartSumReason) elements.chartSumReason.textContent = `Reason: ${trade.exitReason || (isOpen ? 'Paper Holding' : 'Target')}`;
+
+    if (elements.chartLiveIndicator) {
+      if (isOpen) elements.chartLiveIndicator.classList.remove('hidden');
+      else elements.chartLiveIndicator.classList.add('hidden');
+    }
+
+    renderChartTimeline(trade);
+
+    modal.classList.add('active');
+
+    setTimeout(() => {
+      drawTradeChart(trade);
+    }, 50);
+
+    if (state.chartLiveInterval) clearInterval(state.chartLiveInterval);
+    if (isOpen) {
+      state.chartLiveInterval = setInterval(async () => {
+        if (!state.selectedTradeForChart || state.selectedTradeForChart.symbol !== symbol) return;
+        try {
+          const res = await fetch('/api/active-trade');
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.active && data.trade) {
+              state.selectedTradeForChart = data.trade;
+              showTradeChartModal(data.trade);
+            }
+          }
+        } catch (e) { }
+      }, 3000);
+    }
+  }
+
+  function closeTradeChartModal() {
+    if (elements.chartModal) elements.chartModal.classList.remove('active');
+    if (state.chartLiveInterval) {
+      clearInterval(state.chartLiveInterval);
+      state.chartLiveInterval = null;
+    }
+    state.selectedTradeForChart = null;
+  }
+
+  function renderChartTimeline(trade) {
+    const stepper = elements.chartTimelineStepper;
+    if (!stepper) return;
+
+    const isOpen = trade.status === 'ACTIVE' || trade.status === 'OPEN' || (!trade.exitTime && trade.entryTime);
+    const buyTimeStr = trade.entryTime ? new Date(trade.entryTime).toLocaleTimeString() : (trade.buyTimestamp ? new Date(trade.buyTimestamp).toLocaleTimeString() : '00:00:00');
+    const exitTimeStr = trade.exitTime ? new Date(trade.exitTime).toLocaleTimeString() : (isOpen ? 'Monitoring...' : 'Completed');
+    const exitReason = trade.exitReason || (isOpen ? 'Monitoring TP/SL/MaxHold' : 'Completed');
+
+    stepper.innerHTML = `
+      <div class="tl-step">
+        <div class="tl-node done">1</div>
+        <div class="tl-label">Candidate Detected</div>
+        <div class="tl-time">Solana Mainnet</div>
+      </div>
+      <div class="tl-arrow">→</div>
+
+      <div class="tl-step">
+        <div class="tl-node done">2</div>
+        <div class="tl-label">Risk Check</div>
+        <div class="tl-time">Score: ${trade.riskScore ?? 'Passed'}</div>
+      </div>
+      <div class="tl-arrow">→</div>
+
+      <div class="tl-step">
+        <div class="tl-node done">3</div>
+        <div class="tl-label">Strategy Check</div>
+        <div class="tl-time">Score: ${trade.strategyScore ?? 'Passed'}</div>
+      </div>
+      <div class="tl-arrow">→</div>
+
+      <div class="tl-step">
+        <div class="tl-node active">4</div>
+        <div class="tl-label">Paper BUY</div>
+        <div class="tl-time">${buyTimeStr}</div>
+      </div>
+      <div class="tl-arrow">→</div>
+
+      <div class="tl-step">
+        <div class="tl-node ${isOpen ? 'active' : 'done'}">5</div>
+        <div class="tl-label">Price Monitoring</div>
+        <div class="tl-time">+5% TP / -3% SL</div>
+      </div>
+      <div class="tl-arrow">→</div>
+
+      <div class="tl-step">
+        <div class="tl-node ${isOpen ? '' : 'active'}">6</div>
+        <div class="tl-label">TP / SL / Max Hold</div>
+        <div class="tl-time">${exitReason}</div>
+      </div>
+      <div class="tl-arrow">→</div>
+
+      <div class="tl-step">
+        <div class="tl-node ${isOpen ? '' : 'done'}">7</div>
+        <div class="tl-label">Paper SELL</div>
+        <div class="tl-time">${exitTimeStr}</div>
+      </div>
+    `;
   }
 
   // Application Entry Point

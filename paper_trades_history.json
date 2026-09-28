@@ -2262,5 +2262,239 @@
     "exitReason": "MAX_HOLD_TIME",
     "source": "market_data",
     "execution": "paper"
+  },
+  {
+    "tradeId": "PT-000110",
+    "symbol": "GRAYCAT",
+    "tokenName": "GrayCat",
+    "tokenAddress": "GEXjq9Tb7perRs6fwBmuNZL5QAEsS2AWrGeZNBYBpump",
+    "entryPrice": 0.0002184,
+    "exitPrice": 0.00022932,
+    "quantity": 45787.545788,
+    "investment": 10,
+    "exitValue": 10.5,
+    "pnl": 0.5,
+    "pnlPercent": 5,
+    "entryTime": "2026-09-28T05:42:29.397Z",
+    "exitTime": "2026-09-28T05:42:49.912Z",
+    "holdDuration": "00m 20s",
+    "durationSeconds": 20,
+    "durationMs": 20040,
+    "exitReason": "TAKE_PROFIT",
+    "riskScore": null,
+    "strategyScore": null,
+    "liquidity": 41831.36,
+    "volume5m": 71221.12,
+    "crossVerificationResult": null,
+    "source": "market_data",
+    "execution": "paper",
+    "profitTargetPercent": 5,
+    "stopLossPercent": 3,
+    "maxHoldMinutes": 5,
+    "priceHistory": [
+      {
+        "timestamp": "2026-09-28T05:42:29.397Z",
+        "timestampMs": 1790574149397,
+        "price": 0.0002184,
+        "event": "BUY"
+      },
+      {
+        "timestamp": "2026-09-28T05:42:34.414Z",
+        "timestampMs": 1790574154414,
+        "price": 0.0002184
+      },
+      {
+        "timestamp": "2026-09-28T05:42:39.425Z",
+        "timestampMs": 1790574159425,
+        "price": 0.0002184
+      },
+      {
+        "timestamp": "2026-09-28T05:42:44.433Z",
+        "timestampMs": 1790574164433,
+        "price": 0.0002184
+      },
+      {
+        "timestamp": "2026-09-28T05:42:49.437Z",
+        "timestampMs": 1790574169437,
+        "price": 0.0002671
+      },
+      {
+        "timestamp": "2026-09-28T05:42:49.912Z",
+        "timestampMs": 1790574169916,
+        "price": 0.00022932,
+        "event": "SELL"
+      }
+    ]
+  },
+  {
+    "tradeId": "PT-000111",
+    "symbol": "GRAYCAT",
+    "tokenName": "GrayCat",
+    "tokenAddress": "GEXjq9Tb7perRs6fwBmuNZL5QAEsS2AWrGeZNBYBpump",
+    "entryPrice": 0.0002671,
+    "exitPrice": 0.000280455,
+    "quantity": 37439.161363,
+    "investment": 10,
+    "exitValue": 10.5,
+    "pnl": 0.5,
+    "pnlPercent": 5,
+    "entryTime": "2026-09-28T05:43:07.852Z",
+    "exitTime": "2026-09-28T05:44:18.182Z",
+    "holdDuration": "01m 10s",
+    "durationSeconds": 70,
+    "durationMs": 70101,
+    "exitReason": "TAKE_PROFIT",
+    "riskScore": null,
+    "strategyScore": null,
+    "liquidity": 46490.55,
+    "volume5m": 75662.02,
+    "crossVerificationResult": null,
+    "source": "market_data",
+    "execution": "paper",
+    "profitTargetPercent": 5,
+    "stopLossPercent": 3,
+    "maxHoldMinutes": 5,
+    "priceHistory": [
+      {
+        "timestamp": "2026-09-28T05:43:07.852Z",
+        "timestampMs": 1790574187852,
+        "price": 0.0002671,
+        "event": "BUY"
+      },
+      {
+        "timestamp": "2026-09-28T05:43:12.859Z",
+        "timestampMs": 1790574192859,
+        "price": 0.0002671
+      },
+      {
+        "timestamp": "2026-09-28T05:43:17.880Z",
+        "timestampMs": 1790574197880,
+        "price": 0.0002711
+      },
+      {
+        "timestamp": "2026-09-28T05:43:22.883Z",
+        "timestampMs": 1790574202883,
+        "price": 0.0002711
+      },
+      {
+        "timestamp": "2026-09-28T05:43:27.888Z",
+        "timestampMs": 1790574207888,
+        "price": 0.0002711
+      },
+      {
+        "timestamp": "2026-09-28T05:43:32.892Z",
+        "timestampMs": 1790574212892,
+        "price": 0.0002711
+      },
+      {
+        "timestamp": "2026-09-28T05:43:37.905Z",
+        "timestampMs": 1790574217905,
+        "price": 0.0002711
+      },
+      {
+        "timestamp": "2026-09-28T05:43:42.914Z",
+        "timestampMs": 1790574222914,
+        "price": 0.0002711
+      },
+      {
+        "timestamp": "2026-09-28T05:43:47.927Z",
+        "timestampMs": 1790574227927,
+        "price": 0.0002766
+      },
+      {
+        "timestamp": "2026-09-28T05:43:52.929Z",
+        "timestampMs": 1790574232929,
+        "price": 0.0002766
+      },
+      {
+        "timestamp": "2026-09-28T05:43:57.938Z",
+        "timestampMs": 1790574237938,
+        "price": 0.0002766
+      },
+      {
+        "timestamp": "2026-09-28T05:44:02.942Z",
+        "timestampMs": 1790574242942,
+        "price": 0.0002766
+      },
+      {
+        "timestamp": "2026-09-28T05:44:07.945Z",
+        "timestampMs": 1790574247945,
+        "price": 0.0002766
+      },
+      {
+        "timestamp": "2026-09-28T05:44:12.947Z",
+        "timestampMs": 1790574252947,
+        "price": 0.0002766
+      },
+      {
+        "timestamp": "2026-09-28T05:44:17.953Z",
+        "timestampMs": 1790574257953,
+        "price": 0.0003071
+      },
+      {
+        "timestamp": "2026-09-28T05:44:18.182Z",
+        "timestampMs": 1790574258185,
+        "price": 0.000280455,
+        "event": "SELL"
+      }
+    ]
+  },
+  {
+    "tradeId": "PT-000112",
+    "symbol": "tr/acc",
+    "tokenName": "Troll Accelerationism",
+    "tokenAddress": "DGXf3mT2TaHsfy1Cn2p9CCSxfKENNM3oHPoR59Uwpump",
+    "entryPrice": 0.0001554,
+    "exitPrice": 0.00016317000000000003,
+    "quantity": 64350.06435,
+    "investment": 10,
+    "exitValue": 10.5,
+    "pnl": 0.5,
+    "pnlPercent": 5,
+    "entryTime": "2026-09-28T05:44:42.516Z",
+    "exitTime": "2026-09-28T05:44:57.642Z",
+    "holdDuration": "00m 15s",
+    "durationSeconds": 15,
+    "durationMs": 15038,
+    "exitReason": "TAKE_PROFIT",
+    "riskScore": null,
+    "strategyScore": null,
+    "liquidity": 36348.28,
+    "volume5m": 471291.94,
+    "crossVerificationResult": null,
+    "source": "market_data",
+    "execution": "paper",
+    "profitTargetPercent": 5,
+    "stopLossPercent": 3,
+    "maxHoldMinutes": 5,
+    "priceHistory": [
+      {
+        "timestamp": "2026-09-28T05:44:42.516Z",
+        "timestampMs": 1790574282516,
+        "price": 0.0001554,
+        "event": "BUY"
+      },
+      {
+        "timestamp": "2026-09-28T05:44:47.526Z",
+        "timestampMs": 1790574287526,
+        "price": 0.0001554
+      },
+      {
+        "timestamp": "2026-09-28T05:44:52.541Z",
+        "timestampMs": 1790574292541,
+        "price": 0.0001554
+      },
+      {
+        "timestamp": "2026-09-28T05:44:57.554Z",
+        "timestampMs": 1790574297554,
+        "price": 0.0001677
+      },
+      {
+        "timestamp": "2026-09-28T05:44:57.642Z",
+        "timestampMs": 1790574297650,
+        "price": 0.00016317000000000003,
+        "event": "SELL"
+      }
+    ]
   }
 ]

@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
 import { getPortfolioState } from './riskManager.js';
-import { getTradeHistory, getActiveTrade, isGenuineMarketTrade } from './paperTrader.js';
+import { getTradeHistory, getActiveTrade, isGenuineMarketTrade, getTradeById, ensurePriceHistory } from './paperTrader.js';
 import { getCandidates } from './candidateTracker.js';
 import { calculatePerformanceAnalytics } from './analytics.js';
 import { getKillSwitchState, getSimulationAuditLogs } from './simulationLayer.js';
@@ -405,11 +405,49 @@ function handleApiRequest(req, res) {
       const history = getTradeHistory();
       const genuineTrades = history.filter(isGenuineMarketTrade);
       const targetTrades = genuineTrades.length > 0 ? genuineTrades : history;
+      const tradesWithHistory = targetTrades.map(t => ({
+        ...t,
+        profitTargetPercent: t.profitTargetPercent || config.profitTargetPercent,
+        stopLossPercent: t.stopLossPercent || config.stopLossPercent,
+        maxHoldMinutes: t.maxHoldMinutes || config.maxHoldMinutes,
+        priceHistory: ensurePriceHistory(t)
+      }));
+
       sendJsonResponse(res, 200, {
-        count: targetTrades.length,
+        count: tradesWithHistory.length,
         historicalTotalTrades: history.length,
         genuineMarketTradesCount: genuineTrades.length,
-        trades: targetTrades
+        trades: tradesWithHistory
+      });
+      return;
+    }
+
+    // Route 5B: GET /api/trade-chart/:tradeId or GET /api/trade/:tradeId
+    if (pathname.startsWith('/api/trade-chart/') || pathname.startsWith('/api/trade/')) {
+      const parts = pathname.split('/').filter(Boolean);
+      const tradeId = parts[2] || null;
+      if (!tradeId) {
+        sendJsonResponse(res, 400, { error: 'Bad Request', message: 'Trade ID is required' });
+        return;
+      }
+
+      const trade = getTradeById(tradeId);
+      if (!trade) {
+        sendJsonResponse(res, 404, { error: 'Not Found', message: `Trade not found for ID: ${tradeId}` });
+        return;
+      }
+
+      const tpPercent = trade.profitTargetPercent || config.profitTargetPercent;
+      const slPercent = trade.stopLossPercent || config.stopLossPercent;
+      const entryPrice = Number(trade.entryPrice ?? trade.entryPriceUsd ?? 0);
+
+      sendJsonResponse(res, 200, {
+        trade,
+        profitTargetPercent: tpPercent,
+        stopLossPercent: slPercent,
+        tpPrice: Number((entryPrice * (1 + tpPercent / 100)).toFixed(8)),
+        slPrice: Number((entryPrice * (1 - slPercent / 100)).toFixed(8)),
+        priceHistory: ensurePriceHistory(trade)
       });
       return;
     }
@@ -557,7 +595,7 @@ function handleApiRequest(req, res) {
  * @returns {Promise<{ server: http.Server, port: number, stopServer: Function }>}
  */
 export function startDashboardServer(portOverride = null) {
-  const port = portOverride || config.port || 3000;
+  const targetPort = (portOverride !== null && portOverride !== undefined) ? portOverride : (config.port || 3000);
   startTimeMs = Date.now();
 
   return new Promise((resolve, reject) => {
@@ -565,13 +603,14 @@ export function startDashboardServer(portOverride = null) {
       serverInstance = http.createServer(handleApiRequest);
 
       serverInstance.on('error', (err) => {
-        console.error(`[ERROR] Dashboard API server error on port ${port}:`, err.message);
+        console.error(`[ERROR] Dashboard API server error on port ${targetPort}:`, err.message);
         reject(err);
       });
 
-      serverInstance.listen(port, '0.0.0.0', () => {
+      serverInstance.listen(targetPort, '0.0.0.0', () => {
+        const boundPort = serverInstance.address() ? serverInstance.address().port : targetPort;
         console.log('====================================================');
-        console.log(`[INFO] Read-Only Dashboard API running on port ${port}`);
+        console.log(`[INFO] Read-Only Dashboard API running on port ${boundPort}`);
         console.log(`[INFO] Endpoints: /api/status, /api/candidates, /api/active-trade, /api/risk, /api/trades`);
         console.log('====================================================');
 
@@ -582,7 +621,7 @@ export function startDashboardServer(portOverride = null) {
           }
         };
 
-        resolve({ server: serverInstance, port, stopServer });
+        resolve({ server: serverInstance, port: boundPort, stopServer });
       });
     } catch (err) {
       reject(err);
