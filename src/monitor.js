@@ -74,7 +74,8 @@ export async function fetchTokenMarketDetails(tokenAddress) {
             buys24h: mainPair.txns?.h24?.buys ?? null,
             sells24h: mainPair.txns?.h24?.sells ?? null,
             holders: 'N/A (Not provided by API)',
-            dexUrl: mainPair.url || 'N/A'
+            dexUrl: mainPair.url || 'N/A',
+            imageUrl: mainPair.info?.imageUrl || null
           };
         }
       }
@@ -129,7 +130,8 @@ export async function fetchTokenMarketDetails(tokenAddress) {
             buys24h: attr.transactions?.h24?.buys ?? 0,
             sells24h: attr.transactions?.h24?.sells ?? 0,
             holders: 'N/A (GeckoTerminal)',
-            dexUrl: `https://www.geckoterminal.com/solana/pools/${attr.address}`
+            dexUrl: `https://www.geckoterminal.com/solana/pools/${attr.address}`,
+            imageUrl: null
           };
         }
       }
@@ -185,7 +187,8 @@ export function parseGeckoPoolToDetails(pool) {
     buys24h: attr.transactions?.h24?.buys ?? 0,
     sells24h: attr.transactions?.h24?.sells ?? 0,
     holders: 'N/A (GeckoTerminal)',
-    dexUrl: `https://www.geckoterminal.com/solana/pools/${attr.address}`
+    dexUrl: `https://www.geckoterminal.com/solana/pools/${attr.address}`,
+    imageUrl: null
   };
 }
 
