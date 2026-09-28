@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solana Meme Coin Trading Bot - Paper Trading Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">SOL</div>
+        <div class="brand-info">
+          <h2>SOLANA BOT</h2>
+          <span class="badge badge-warning">PAPER TRADING ONLY</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="#active-trade" class="nav-item">
+          <span class="nav-icon">⚡</span> Active Trade
+        </a>
+        <a href="#candidates" class="nav-item">
+          <span class="nav-icon">🔍</span> Candidates
+        </a>
+        <a href="#performance" class="nav-item">
+          <span class="nav-icon">📈</span> Performance
+        </a>
+        <a href="#risk-limits" class="nav-item">
+          <span class="nav-icon">🛡️</span> Risk Limits
+        </a>
+        <a href="#watchlist" class="nav-item">
+          <span class="nav-icon">📅</span> Watchlist
+        </a>
+        <a href="#trade-history" class="nav-item">
+          <span class="nav-icon">📜</span> Trade History
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-indicator-box">
+          <span id="sidebar-status-dot" class="status-dot dot-online"></span>
+          <span id="sidebar-status-text" class="status-text">System Normal</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="top-left">
+          <h1>Paper Trading Dashboard</h1>
+          <span id="bot-mode-text" class="mode-tag">PAPER TRADING ONLY</span>
+        </div>
+        <div class="top-right">
+          <div class="sync-info">
+            <span class="clock-label">LIVE:</span>
+            <span id="live-time" class="live-clock">--:--:--</span>
+            <span class="sync-label">Last Sync:</span>
+            <span id="last-sync-time" class="sync-time">--</span>
+          </div>
+          <button id="btn-refresh" class="btn btn-secondary">
+            <span class="btn-icon">🔄</span> Refresh
+          </button>
+        </div>
+      </header>
+
+      <!-- System Status Bar -->
+      <div class="status-bar-card">
+        <div class="status-item">
+          <span class="status-label">Bot Status:</span>
+          <div class="status-val-wrap">
+            <span id="bot-status-dot" class="status-dot dot-online"></span>
+            <span id="bot-status-val" class="status-value">RUNNING</span>
+          </div>
+        </div>
+        <div class="status-item">
+          <span class="status-label">API Status:</span>
+          <div class="status-val-wrap">
+            <span id="api-status-dot" class="status-dot dot-online"></span>
+            <span id="api-status-val" class="status-value">OK</span>
+          </div>
+        </div>
+        <div class="status-item">
+          <span class="status-label">RPC Endpoint:</span>
+          <span id="api-rpc-url" class="status-value monospace">Helius / Solana Mainnet</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Uptime:</span>
+          <span id="uptime-val" class="status-value">0h 0m</span>
+        </div>
+      </div>
+
+      <!-- Portfolio Summary Banner -->
+      <div class="summary-cards-grid">
+        <div class="card summary-card">
+          <span class="card-subtitle">Total Paper P&L</span>
+          <div id="total-pnl-val" class="card-main-val pnl-neutral">$0.00</div>
+        </div>
+        <div class="card summary-card">
+          <span class="card-subtitle">Daily P&L</span>
+          <div id="daily-pnl-val" class="card-main-val pnl-neutral">$0.00</div>
+        </div>
+      </div>
+
+      <!-- Validation Milestone Banner (Phase 8.7) -->
+      <section id="validation-section" class="section">
+        <div class="card validation-card">
+          <div class="card-header">
+            <h3>100-Trade Milestone Validation Session</h3>
+            <span id="val-session-status" class="badge badge-info">IN PROGRESS</span>
+          </div>
+          <div class="validation-progress-bar">
+            <div id="val-progress-fill" class="progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="validation-stats-grid">
+            <div class="val-stat">
+              <span class="val-label">Trades Executed</span>
+              <span id="val-trades-count" class="val-value">0</span>
+            </div>
+            <div class="val-stat">
+              <span class="val-label">Min Target</span>
+              <span id="val-min-target" class="val-value">100</span>
+            </div>
+            <div class="val-stat">
+              <span class="val-label">Rec Target</span>
+              <span id="val-rec-target" class="val-value">200</span>
+            </div>
+            <div class="val-stat">
+              <span class="val-label">Win Rate</span>
+              <span id="val-win-rate" class="val-value">0.0%</span>
+            </div>
+            <div class="val-stat">
+              <span class="val-label">Session P&L</span>
+              <span id="val-pnl" class="val-value">$0.00</span>
+            </div>
+            <div class="val-stat">
+              <span class="val-label">Session Duration</span>
+              <span id="val-duration" class="val-value">0m 0s</span>
+            </div>
+          </div>
+          <div id="val-completion-banner" class="completion-banner hidden">
+            🎉 100-TRADE MILESTONE COMPLETED! Target validation goal achieved cleanly.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Active Trade -->
+      <section id="active-trade" class="section">
+        <div class="section-header">
+          <h2>Active Position</h2>
+        </div>
+        <div id="active-trade-container">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </section>
+
+      <!-- Section: Candidates Evaluated -->
+      <section id="candidates" class="section">
+        <div class="section-header">
+          <h2>Candidate Tokens Evaluated</h2>
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="ALL">
+              All (<span id="count-all">0</span>)
+            </button>
+            <button class="filter-btn" data-filter="APPROVED">
+              Approved (<span id="count-approved">0</span>)
+            </button>
+            <button class="filter-btn" data-filter="REJECTED">
+              Rejected (<span id="count-rejected">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <div class="card table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Token</th>
+                  <th>Price USD</th>
+                  <th>Liquidity</th>
+                  <th>5M Volume</th>
+                  <th>Risk Filter</th>
+                  <th>Strategy Score</th>
+                  <th>Decision</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="candidates-tbody">
+                <!-- Rendered dynamically by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="candidate-summary-bar">
+          <div class="cand-stat">Evaluated: <strong id="cand-total-eval">0</strong></div>
+          <div class="cand-stat">Approved: <strong id="cand-approved-count">0</strong></div>
+          <div class="cand-stat">Rejected: <strong id="cand-rejected-count">0</strong></div>
+          <div class="cand-stat">Executed Trades: <strong id="cand-executed-trades">0</strong></div>
+        </div>
+      </section>
+
+      <!-- Section: Performance Analytics -->
+      <section id="performance" class="section">
+        <div class="section-header">
+          <h2>Performance Analytics</h2>
+        </div>
+        <div class="perf-grid">
+          <div class="card perf-card">
+            <span class="perf-title">Total Trades</span>
+            <span id="perf-total-trades" class="perf-value">0</span>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Wins / Losses</span>
+            <div class="perf-split">
+              <span id="perf-wins" class="text-success">0</span> / <span id="perf-losses" class="text-danger">0</span>
+            </div>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Win Rate</span>
+            <span id="perf-win-rate" class="perf-value">0.0%</span>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Profit Factor</span>
+            <span id="perf-profit-factor" class="perf-value">0.00</span>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Average P&L</span>
+            <span id="perf-avg-pnl" class="perf-value">$0.00</span>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Avg Win / Avg Loss</span>
+            <div class="perf-split">
+              <span id="perf-avg-win" class="text-success">$0.00</span> / <span id="perf-avg-loss" class="text-danger">$0.00</span>
+            </div>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Best Trade</span>
+            <span id="perf-best-trade" class="perf-value text-success">$0.00</span>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Worst Trade</span>
+            <span id="perf-worst-trade" class="perf-value text-danger">$0.00</span>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Avg Hold Duration</span>
+            <span id="perf-avg-duration" class="perf-value">00m 00s</span>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Max Drawdown</span>
+            <span id="perf-max-drawdown" class="perf-value text-danger">0.00%</span>
+          </div>
+          <div class="card perf-card">
+            <span class="perf-title">Data Quality</span>
+            <span id="perf-data-quality" class="perf-value">100%</span>
+          </div>
+        </div>
+
+        <div class="card exit-breakdown-card">
+          <h4>Exit Reason Breakdown</h4>
+          <div class="exit-breakdown-grid">
+            <div class="exit-item">
+              <span class="exit-label">Take Profit (+5%)</span>
+              <span id="exit-tp-count" class="exit-val text-success">0</span>
+            </div>
+            <div class="exit-item">
+              <span class="exit-label">Stop Loss (-3%)</span>
+              <span id="exit-sl-count" class="exit-val text-danger">0</span>
+            </div>
+            <div class="exit-item">
+              <span class="exit-label">Max Hold (5m)</span>
+              <span id="exit-mh-count" class="exit-val text-warning">0</span>
+            </div>
+            <div class="exit-item">
+              <span class="exit-label">Other Exits</span>
+              <span id="exit-other-count" class="exit-val">0</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Risk Limits & Real-Time Metrics -->
+      <section id="risk-limits" class="section">
+        <div class="section-header">
+          <h2>Risk Management & Safety Gates</h2>
+        </div>
+        <div class="card risk-grid-card">
+          <div class="risk-metrics-grid">
+            <div class="risk-item">
+              <span class="risk-label">Hourly Trades:</span>
+              <span id="risk-hourly-trades" class="risk-value">0 / 5</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Daily Trades:</span>
+              <span id="risk-daily-trades" class="risk-value">0 / 20</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Consecutive Losses:</span>
+              <span id="risk-consec-losses" class="risk-value">0 / 3</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Circuit Breaker:</span>
+              <span id="risk-circuit-breaker" class="risk-value text-success">NORMAL</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Cooldown Status:</span>
+              <span id="risk-cooldown" class="risk-value text-success">INACTIVE</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Position Size:</span>
+              <span id="risk-pos-size" class="risk-value">$10.00 SOL</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Max Liq Position %:</span>
+              <span id="risk-max-liq-pct" class="risk-value">0.10%</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Min Liquidity:</span>
+              <span id="risk-min-liq" class="risk-value">$10,000</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Min 5M Volume:</span>
+              <span id="risk-min-vol" class="risk-value">$5,000</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Min Strategy Score:</span>
+              <span id="risk-min-strat-score" class="risk-value">70 / 100</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Max Risk Score:</span>
+              <span id="risk-max-risk-score" class="risk-value">35 / 100</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">Max Daily Loss:</span>
+              <span id="risk-max-daily-loss" class="risk-value">-$30.00</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Tomorrow Watchlist -->
+      <section id="watchlist" class="section">
+        <div class="section-header">
+          <h2>Tomorrow Watchlist & Discovery Pipeline</h2>
+        </div>
+        <div class="card table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Token</th>
+                  <th>Source</th>
+                  <th>Score</th>
+                  <th>Verification</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="tomorrow-tbody">
+                <!-- Rendered dynamically by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Paper Trade History -->
+      <section id="trade-history" class="section">
+        <div class="section-header">
+          <h2>Paper Trade History</h2>
+        </div>
+        <div class="card table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Token</th>
+                  <th>Entry Time</th>
+                  <th>Entry Price</th>
+                  <th>Exit Time</th>
+                  <th>Exit Price</th>
+                  <th>Investment</th>
+                  <th>P/L ($)</th>
+                  <th>P/L (%)</th>
+                  <th>Result</th>
+                  <th>Duration</th>
+                  <th>Exit Reason</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <!-- Rendered dynamically by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Candidate Details Modal -->
+  <div id="candidate-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-candidate-title">Candidate Details</h3>
+        <button id="btn-modal-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div id="modal-candidate-body" class="modal-body">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button id="btn-modal-dismiss" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trade Chart & Lifecycle Modal -->
+  <div id="trade-chart-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="chart-modal-title">Trade Chart & Price Movement</h3>
+          <span id="chart-modal-status" class="badge badge-success">COMPLETED</span>
+          <span id="chart-live-indicator" class="live-dot hidden">● LIVE</span>
+        </div>
+        <button id="btn-chart-modal-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Trade Summary Bar -->
+        <div class="chart-summary-card">
+          <div class="summary-col">
+            <div id="chart-sum-token" class="summary-token-title">SOL / Token</div>
+            <div id="chart-sum-address" class="summary-address monospace">0x000...000</div>
+          </div>
+          <div class="summary-col">
+            <div class="sum-label">Entry Price</div>
+            <div id="chart-sum-entry-price" class="sum-val">$0.0000</div>
+            <div id="chart-sum-entry-time" class="sum-sub">--:--:--</div>
+          </div>
+          <div class="summary-col">
+            <div id="chart-sum-exit-label" class="sum-label">Exit Price</div>
+            <div id="chart-sum-current-price" class="sum-val">$0.0000</div>
+            <div id="chart-sum-exit-time" class="sum-sub">--:--:--</div>
+          </div>
+          <div class="summary-col">
+            <div class="sum-label">P/L (%)</div>
+            <div id="chart-sum-pnl-pct" class="sum-val pnl-neutral">+0.00%</div>
+            <div id="chart-sum-pnl-usd" class="sum-sub">+$0.00</div>
+          </div>
+          <div class="summary-col">
+            <div class="sum-label">Duration</div>
+            <div id="chart-sum-duration" class="sum-val">0m 0s</div>
+            <div id="chart-sum-pos-size" class="sum-sub">Size: $10.00</div>
+          </div>
+          <div class="summary-col">
+            <div class="sum-label">Scores</div>
+            <div id="chart-sum-scores" class="sum-val">Strat: 85 | Risk: 12</div>
+            <div id="chart-sum-reason" class="sum-sub">Exit: TAKE_PROFIT</div>
+          </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="canvas-wrapper">
+          <canvas id="trade-chart-canvas" width="900" height="340"></canvas>
+          <div id="chart-tooltip" class="chart-tooltip hidden"></div>
+          <div id="chart-empty-state" class="chart-empty-state hidden">
+            <span>No price history samples recorded for this trade yet.</span>
+          </div>
+        </div>
+
+        <!-- Timeline Stepper -->
+        <div id="chart-timeline-stepper" class="timeline-stepper">
+          <!-- Timeline events rendered dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-chart-modal-dismiss" class="btn btn-secondary">Close Chart</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
