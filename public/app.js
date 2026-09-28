@@ -186,6 +186,18 @@
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   }
 
+  function renderTokenAvatar(imageUrl, symbol, size = 20) {
+    const cleanSymbol = (symbol || '?').toUpperCase().trim();
+    const initial = cleanSymbol.charAt(0) || '?';
+
+    if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('http')) {
+      const escapedUrl = imageUrl.replace(/"/g, '&quot;');
+      return `<span class="token-avatar-wrapper" style="display: inline-flex; align-items: center; justify-content: center; width: ${size}px; height: ${size}px; border-radius: 50%; overflow: hidden; background: rgba(255,255,255,0.1); margin-right: 6px; vertical-align: middle; flex-shrink: 0;"><img src="${escapedUrl}" alt="${cleanSymbol}" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size: ${Math.floor(size * 0.55)}px; font-weight: 800; color: #FF69B4;\\'>${initial}</span>';" /></span>`;
+    }
+
+    return `<span class="token-avatar-wrapper" style="display: inline-flex; align-items: center; justify-content: center; width: ${size}px; height: ${size}px; border-radius: 50%; background: rgba(255, 105, 180, 0.2); border: 1px solid #FF69B4; margin-right: 6px; vertical-align: middle; flex-shrink: 0;"><span style="font-size: ${Math.floor(size * 0.55)}px; font-weight: 800; color: #FF69B4;">${initial}</span></span>`;
+  }
+
   // Live UTC Clock
   function updateLiveClock() {
     const now = new Date();
@@ -457,7 +469,7 @@
           </div>
         </div>
         <div class="selected-card-grid">
-          <div class="sel-item"><span class="sel-label">TOKEN</span><span class="sel-val pink-text">${t.symbol || 'UNKNOWN'} (${t.name || 'Unknown'})</span></div>
+          <div class="sel-item"><span class="sel-label">TOKEN</span><span class="sel-val pink-text" style="display: flex; align-items: center;">${renderTokenAvatar(t.imageUrl, t.symbol, 24)} <span>${t.symbol || 'UNKNOWN'} (${t.name || 'Unknown'})</span></span></div>
           <div class="sel-item"><span class="sel-label">MINT ADDRESS</span><code class="sel-val">${truncateAddress(t.address || t.tokenAddress)}</code></div>
           <div class="sel-item"><span class="sel-label">SELECTION TIME</span><span class="sel-val">${buyTimeStr}</span></div>
           <div class="sel-item"><span class="sel-label">STRATEGY SCORE</span><span class="sel-val">${strategyScoreStr}</span></div>
@@ -607,8 +619,13 @@
       return `
         <tr>
           <td>
-            <strong style="color: var(--text-white);">${symbol}</strong>
-            <div style="font-size: 11px; color: var(--text-muted);">${name}</div>
+            <div style="display: flex; align-items: center;">
+              ${renderTokenAvatar(c.imageUrl, symbol, 22)}
+              <div>
+                <strong style="color: var(--text-white);">${symbol}</strong>
+                <div style="font-size: 11px; color: var(--text-muted);">${name}</div>
+              </div>
+            </div>
           </td>
           <td>
             <code style="color: var(--pink-bright);">${truncateAddress(addr)}</code>
@@ -838,7 +855,15 @@
 
       return `
         <tr>
-          <td><strong style="color: var(--text-white);">${t.symbol || 'TOKEN'}</strong></td>
+          <td>
+            <div style="display: flex; align-items: center;">
+              ${renderTokenAvatar(t.imageUrl, t.symbol, 22)}
+              <div>
+                <strong style="color: var(--text-white);">${t.symbol || 'TOKEN'}</strong>
+                ${t.tokenName || t.name ? `<div style="font-size: 11px; color: var(--text-muted);">${t.tokenName || t.name}</div>` : ''}
+              </div>
+            </div>
+          </td>
           <td><code>${truncateAddress(t.tokenAddress || t.address)}</code></td>
           <td style="color: var(--text-muted);">${buyTimeStr}</td>
           <td>${formatCurrency(entryPrice)}</td>
@@ -1466,13 +1491,17 @@
     const exitTimeStr = isOpen ? 'Live Monitoring' : (trade.exitTime ? new Date(trade.exitTime).toLocaleString() : 'N/A');
     const durationStr = trade.holdDuration || formatSeconds(trade.durationSeconds || (trade.elapsedMs ? trade.elapsedMs / 1000 : 0));
 
-    if (elements.chartModalTitle) elements.chartModalTitle.textContent = `TRADE CHART: ${symbol} (${name})`;
+    if (elements.chartModalTitle) {
+      elements.chartModalTitle.innerHTML = `<span style="display: flex; align-items: center; gap: 8px;">${renderTokenAvatar(trade.imageUrl, symbol, 24)} <span>TRADE CHART: ${symbol} (${name})</span></span>`;
+    }
     if (elements.chartModalStatus) {
       elements.chartModalStatus.textContent = statusText;
       elements.chartModalStatus.className = `trade-status-badge ${isOpen ? 'open' : 'closed'}`;
     }
 
-    if (elements.chartSumToken) elements.chartSumToken.textContent = `${symbol} (${name})`;
+    if (elements.chartSumToken) {
+      elements.chartSumToken.innerHTML = `<span style="display: flex; align-items: center; gap: 6px;">${renderTokenAvatar(trade.imageUrl, symbol, 20)} <span>${symbol} (${name})</span></span>`;
+    }
     if (elements.chartSumAddress) elements.chartSumAddress.textContent = truncateAddress(addr);
     if (elements.chartSumEntryPrice) elements.chartSumEntryPrice.textContent = formatCurrency(entryPrice, 6);
     if (elements.chartSumEntryTime) elements.chartSumEntryTime.textContent = entryTimeStr;
